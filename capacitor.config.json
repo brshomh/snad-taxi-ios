@@ -1,0 +1,21 @@
+{
+  "appId": "sa.snad.app",
+  "appName": "سند",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "minWebViewVersion": 60,
+    "backgroundColor": "#07070d",
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#07070d",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}

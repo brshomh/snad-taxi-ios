@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SNAD</string>
+    <string name="title_activity_main">SNAD</string>
+    <string name="package_name">sa.snad.app</string>
+    <string name="custom_url_scheme">sa.snad.app</string>
+</resources>

@@ -1,0 +1,300 @@
+/* ============================================
+   SAND TAXI - Main Index Page
+   الصفحة الرئيسية
+   ============================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: #0A1628;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  direction: rtl;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Background decorations */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.bg-circle-1 {
+  width: 400px;
+  height: 400px;
+  background: rgba(201, 168, 76, 0.07);
+  top: -100px;
+  right: -100px;
+}
+
+.bg-circle-2 {
+  width: 300px;
+  height: 300px;
+  background: rgba(15, 31, 61, 0.8);
+  bottom: -80px;
+  left: -80px;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Main Content */
+.main-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 30px 20px;
+  width: 100%;
+  max-width: 420px;
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Logo Section */
+.hero-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-icon-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.logo-icon {
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #C9A84C, #A07C30);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 0 40px rgba(201, 168, 76, 0.4);
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(201, 168, 76, 0.3); }
+  50% { box-shadow: 0 0 50px rgba(201, 168, 76, 0.6); }
+}
+
+.logo-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 30px;
+  border: 2px solid rgba(201, 168, 76, 0.3);
+  animation: ringPulse 2s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.05); opacity: 0.6; }
+}
+
+.hero-title {
+  font-size: 38px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.hero-title span {
+  color: #C9A84C;
+}
+
+.hero-subtitle {
+  font-size: 15px;
+  color: #8FA3C0;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+/* Mode Selector Cards */
+.mode-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.mode-card {
+  background: #111E36;
+  border: 1.5px solid #1E3459;
+  border-radius: 20px;
+  padding: 22px 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mode-card:hover {
+  border-color: #C9A84C;
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 32px rgba(201, 168, 76, 0.2);
+}
+
+.mode-card:hover::before { opacity: 1; }
+
+.mode-card:active { transform: translateY(0) scale(0.99); }
+
+.mode-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.mode-card.passenger .mode-icon-box {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.2), rgba(160, 124, 48, 0.2));
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.mode-card.driver .mode-icon-box {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(30, 132, 73, 0.2));
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.mode-info {
+  flex: 1;
+}
+
+.mode-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.mode-desc {
+  font-size: 13px;
+  color: #8FA3C0;
+  line-height: 1.5;
+}
+
+.mode-arrow {
+  font-size: 18px;
+  color: #8FA3C0;
+  transition: all 0.3s ease;
+  transform: rotate(180deg); /* RTL arrow flip */
+}
+
+.mode-card:hover .mode-arrow {
+  color: #C9A84C;
+  transform: rotate(180deg) translateX(-5px);
+}
+
+/* Tagline */
+.tagline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8FA3C0;
+  font-size: 12px;
+}
+
+.tagline-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #C9A84C;
+}
+
+/* Car animation at bottom */
+.car-animation {
+  position: fixed;
+  bottom: 20px;
+  left: -100px;
+  font-size: 36px;
+  animation: driveCar 8s linear infinite;
+  z-index: 0;
+  filter: drop-shadow(0 4px 12px rgba(201, 168, 76, 0.4));
+}
+
+@keyframes driveCar {
+  from { left: -100px; }
+  to { left: calc(100% + 100px); }
+}
+
+/* Road line */
+.road-line {
+  position: fixed;
+  bottom: 32px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 20px,
+    rgba(201, 168, 76, 0.2) 20px,
+    rgba(201, 168, 76, 0.2) 40px
+  );
+  z-index: 0;
+}
+
+/* Version badge */
+.version-badge {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 52, 89, 0.6);
+  border: 1px solid #1E3459;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 11px;
+  color: #8FA3C0;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+}

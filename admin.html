@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>سند — لوحة التحكم الشاملة</title>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6WHS68GB18"><\/script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6WHS68GB18', { page_title: 'سند Admin', send_page_view: true });
+<\/script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>
+<style>
+:root{--bg:#07070d;--sf:#0f0f1a;--card:#161622;--brd:rgba(255,255,255,.07);--ac:#f5c518;--a2:#3b82f6;--gn:#22c55e;--rd:#ef4444;--tx:#eeeef5;--sub:rgba(238,238,245,.5);--r:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;}
+a{color:inherit;text-decoration:none;}
+/* ===== SIDEBAR ===== */
+.sb{width:230px;background:var(--sf);border-left:1px solid var(--brd);position:fixed;right:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
+.sbl{padding:20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--brd);margin-bottom:8px;}
+.sbi{width:38px;height:38px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;}
+.sbn{font-size:18px;font-weight:800;} .sbs{font-size:10px;color:var(--sub);}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:600;color:var(--sub);border-right:3px solid transparent;transition:all .2s;position:relative;}
+.ni em{font-style:normal;font-size:17px;}
+.ni:hover{background:rgba(255,255,255,.04);color:var(--tx);}
+.ni.on{color:var(--ac);border-right-color:var(--ac);background:rgba(245,197,24,.07);}
+.nb{margin-right:auto;background:var(--rd);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;}
+.sbf{margin-top:auto;padding:16px 20px;border-top:1px solid var(--brd);}
+.sf2{font-size:11px;color:var(--sub);margin-top:4px;}
+/* ===== MAIN ===== */
+.mc{margin-right:230px;flex:1;padding:24px;overflow-y:auto;min-height:100vh;}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.pt{font-size:20px;font-weight:800;} .ps{font-size:12px;color:var(--sub);margin-top:3px;}
+/* ===== CARDS ===== */
+.card{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:20px;}
+.ct{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.g3a{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px;}
+.sc{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;}
+.sc::before{content:'';position:absolute;top:0;inset-inline:0;height:3px;}
+.sc.ac::before{background:var(--ac);} .sc.bl::before{background:var(--a2);} .sc.gn::before{background:var(--gn);} .sc.rd::before{background:var(--rd);}
+.sv{font-size:26px;font-weight:800;margin:8px 0 3px;} .sl{font-size:12px;color:var(--sub);}
+.sch{font-size:10px;font-weight:700;margin-top:6px;} .up{color:var(--gn);} .dn{color:var(--rd);}
+/* ===== TABLE ===== */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:right;padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--sub);border-bottom:1px solid var(--brd);}
+.tbl td{padding:11px 12px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03);}
+.tbl tr:last-child td{border-bottom:none;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.bon{background:rgba(34,197,94,.15);color:var(--gn);} .bof{background:rgba(255,255,255,.06);color:var(--sub);} .bbu{background:rgba(59,130,246,.15);color:#60a5fa;}
+/* ===== INPUTS ===== */
+.inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;color:var(--tx);font-size:13px;font-family:inherit;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--ac);}
+.inp.sm{padding:7px 10px;font-size:12px;}
+.lbl{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:5px;display:block;}
+.frow{margin-bottom:14px;}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+/* ===== TOGGLE ===== */
+.tg{position:relative;width:42px;height:23px;flex-shrink:0;}
+.tg input{opacity:0;width:0;height:0;}
+.tgs{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:99px;cursor:pointer;transition:.3s;}
+.tgs::before{content:'';position:absolute;width:17px;height:17px;background:#fff;border-radius:50%;top:3px;right:3px;transition:.3s;}
+input:checked+.tgs{background:var(--gn);}
+input:checked+.tgs::before{transform:translateX(-19px);}
+.tr2{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--brd);}
+.tr2:last-child{border-bottom:none;}
+.trl{font-size:13px;font-weight:600;} .trs{font-size:11px;color:var(--sub);margin-top:2px;}
+/* ===== BUTTONS ===== */
+.btn{padding:9px 18px;border-radius:9px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.bac{background:var(--ac);color:#000;} .bac:hover{opacity:.9;}
+.bbl{background:rgba(59,130,246,.2);color:#60a5fa;border:1px solid rgba(59,130,246,.3);} .bbl:hover{background:rgba(59,130,246,.3);}
+.bgr{background:rgba(255,255,255,.07);color:var(--tx);border:1px solid var(--brd);} .bgr:hover{background:rgba(255,255,255,.12);}
+.brd{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);} .brd:hover{background:rgba(239,68,68,.25);}
+.bgn{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3);} .bgn:hover{background:rgba(34,197,94,.25);}
+.btn.sm{padding:5px 12px;font-size:11px;}
+/* ===== MAP ===== */
+.mapbox{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;}
+.mh{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd);}
+#adminMap,#tripsMap{height:350px;}
+/* ===== SECTION TABS ===== */
+.sec{display:none;} .sec.on{display:block;}
+/* ===== RANGE ===== */
+.rng{width:100%;-webkit-appearance:none;height:4px;border-radius:99px;background:rgba(245,197,24,.25);outline:none;}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ac);cursor:pointer;}
+.rval{font-size:28px;font-weight:900;color:var(--ac);text-align:center;margin:10px 0 6px;}
+/* ===== FEED ===== */
+.fi{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.fi:last-child{border-bottom:none;}
+.fd{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.ft{font-size:12px;font-weight:500;} .fs{font-size:10px;color:var(--sub);margin-top:2px;}
+/* ===== PRICING CARD ===== */
+.pc{background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.pi2{font-size:24px;} .pn{font-size:13px;font-weight:700;} .pd{font-size:11px;color:var(--sub);margin-top:2px;}
+.pnum{width:65px;background:rgba(255,255,255,.07);border:1px solid var(--brd);border-radius:8px;padding:6px 8px;color:var(--tx);font-size:14px;font-weight:700;font-family:inherit;text-align:center;outline:none;}
+.pnum:focus{border-color:var(--ac);}
+.punit{font-size:11px;color:var(--sub);}
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:22px;left:22px;font-weight:700;font-size:13px;padding:13px 20px;border-radius:12px;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+/* ===== LIVE DOT ===== */
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.ldot{width:8px;height:8px;border-radius:50%;background:var(--gn);animation:pulse 2s infinite;}
+/* ===== SETTINGS GROUP ===== */
+.sg2{background:rgba(255,255,255,.025);border:1px solid var(--brd);border-radius:11px;padding:16px;margin-bottom:14px;}
+.sgh{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--ac);}
+/* ===== STATUS BAR ===== */
+.sbar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.stag{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid;}
+.stag.ok{background:rgba(34,197,94,.1);color:var(--gn);border-color:rgba(34,197,94,.25);}
+.stag.warn{background:rgba(245,197,24,.1);color:var(--ac);border-color:rgba(245,197,24,.25);}
+.stag.err{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.25);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sbl">
+    <div class="sbi">س</div>
+    <div><div class="sbn">سند</div><div class="sbs">لوحة التحكم v2</div></div>
+  </div>
+  <nav>
+    <div class="ni on" onclick="nav('dashboard',this)"><em>📊</em> لوحة المعلومات</div>
+    <div class="ni" onclick="nav('pricing',this)"><em>💰</em> التسعير</div>
+    <div class="ni" onclick="nav('payment',this)"><em>💳</em> بوابة الدفع</div>
+    <div class="ni" onclick="nav('drivers',this)"><em>🚗</em> السائقون <span class="nb" id="dnb">٠</span></div>
+    <div class="ni" onclick="nav('trips',this)"><em>🗺️</em> الرحلات</div>
+    <div class="ni" onclick="nav('maps',this)"><em>📍</em> إعدادات الخريطة</div>
+    <div class="ni" onclick="nav('settings',this)"><em>⚙️</em> إعدادات التطبيق</div>
+    <div class="ni" onclick="nav('analytics',this)"><em>📈</em> التحليلات</div>
+    <div class="ni" onclick="nav('promo',this)"><em>🎁</em> رموز ترويجية</div>
+    <div class="ni" onclick="nav('notifs',this)"><em>🔔</em> الإشعارات <span class="nb" id="notifBadge">0</span></div>
+    <div class="ni" onclick="nav('links',this)"><em>🔗</em> روابط التطبيق</div>
+  </nav>
+  <div class="sbf">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="ldot"></div>
+      <div><div style="font-size:12px;font-weight:700;">خادم مباشر</div><div id="ltime" style="font-size:10px;color:var(--sub);"></div></div>
+    </div>
+    <div class="sf2">34.165.9.100:80</div>
+  </div>
+</aside>
+
+<main class="mc">
+
+<!-- STATUS BAR -->
+<div class="sbar" id="sbar">
+  <span class="stag ok">🟢 خادم متصل</span>
+  <span class="stag ok" id="sb_pay">💳 PayTabs --</span>
+  <span class="stag ok" id="sb_maps">🗺️ Maps --</span>
+  <span class="stag ok" id="sb_maint">✅ التطبيق يعمل</span>
+</div>
+
+<!-- =================== DASHBOARD =================== -->
+<section class="sec on" id="p-dashboard">
+  <div class="ph">
+    <div><div class="pt">📊 لوحة المعلومات</div><div class="ps" id="dt">جاري التحميل...</div></div>
+    <button class="btn bac" onclick="loadDashboard()">🔄 تحديث</button>
+  </div>
+  <div class="g4">
+    <div class="sc ac"><div style="font-size:22px;">🚗</div><div class="sv" id="s_drivers">--</div><div class="sl">سائقون متصلون</div></div>
+    <div class="sc bl"><div style="font-size:22px;">🛣️</div><div class="sv" id="s_trips">--</div><div class="sl">رحلات اليوم</div></div>
+    <div class="sc gn"><div style="font-size:22px;">💵</div><div class="sv" id="s_rev">--</div><div class="sl">إيرادات اليوم</div></div>
+    <div class="sc rd"><div style="font-size:22px;">👤</div><div class="sv" id="s_pass">--</div><div class="sl">ركاب مسجلون</div></div>
+  </div>
+  <div class="g3a">
+    <div class="mapbox">
+      <div class="mh">
+        <div><div style="font-size:14px;font-weight:700;">📡 خريطة السائقين المباشرة</div><div style="font-size:11px;color:var(--sub);margin-top:2px;">تُحدَّث كل ١٥ ث</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div class="ldot"></div><span style="font-size:11px;color:var(--gn);font-weight:700;">مباشر</span></div>
+      </div>
+      <div id="adminMap"></div>
+    </div>
+    <div class="card" style="max-height:400px;overflow-y:auto;">
+      <div class="ct">⚡ النشاط المباشر</div>
+      <div id="feed"><div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">جاري التحميل...</div></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📊 الرحلات الجارية</div>
+      <div id="actTrips"><div style="color:var(--sub);font-size:12px;text-align:center;padding:16px;">لا توجد رحلات جارية</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">⚙️ حالة الخادم</div>
+      <div class="tr2"><div class="trl">Node.js</div><span class="badge bon">v18.19.1 يعمل</span></div>
+      <div class="tr2"><div class="trl">المنفذ</div><span class="badge bon">80</span></div>
+      <div class="tr2"><div class="trl">PayTabs</div><span class="badge" id="srv_pay_st">--</span></div>
+      <div class="tr2"><div class="trl">Google Maps</div><span class="badge bon">مفعّل</span></div>
+      <div class="tr2"><div class="trl">وضع الصيانة</div><span class="badge" id="srv_maint_st">--</span></div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn brd sm" onclick="resetDaily()">🔄 إعادة إحصائيات اليوم</button>
+        <button class="btn brd sm" onclick="resetTrips()">🗑️ مسح الرحلات</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== PRICING =================== -->
+<section class="sec" id="p-pricing">
+  <div class="ph">
+    <div><div class="pt">💰 إدارة التسعير</div><div class="ps">تحكم كامل في أسعار كل أنواع الرحلات</div></div>
+    <button class="btn bac" onclick="savePricing()">💾 حفظ وتطبيق فوراً</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🚗 الأسعار الأساسية (ر.س)</div>
+      <div id="priceCards"></div>
+    </div>
+    <div class="card">
+      <div class="ct">📏 تسعير إضافي</div>
+      <div class="frow"><label class="lbl">سعر الكيلومتر (ر.س)</label><input class="inp" type="number" id="pkm" value="2.5" step="0.1" min="0"></div>
+      <div class="frow"><label class="lbl">سعر الدقيقة (ر.س)</label><input class="inp" type="number" id="pmin" value="0.5" step="0.1" min="0"></div>
+      <div class="frow"><label class="lbl">الحد الأدنى للأجرة (ر.س)</label><input class="inp" type="number" id="pmf" value="12" min="0"></div>
+      <div style="margin-top:16px;padding:14px;background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:10px;">
+        <div class="ct" style="margin-bottom:10px;">⚡ مضاعف الذروة</div>
+        <div class="rval" id="sdisp">1.0×</div>
+        <input type="range" class="rng" id="sslider" min="1" max="3" step="0.1" value="1" oninput="document.getElementById('sdisp').textContent=parseFloat(this.value).toFixed(1)+'×'">
+        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--sub);"><span>عادي ١×</span><span>ذروة ٣×</span></div>
+        <div class="tr2" style="margin-top:10px;">
+          <div><div class="trl">تفعيل Surge الآن</div></div>
+          <label class="tg"><input type="checkbox" id="surgeOn"><span class="tgs"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">📊 نسب العمولة (%)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;" id="commCards"></div>
+  </div>
+</section>
+
+<!-- =================== PAYMENT =================== -->
+<section class="sec" id="p-payment">
+  <div class="ph">
+    <div><div class="pt">💳 بوابة الدفع — PayTabs</div><div class="ps">تحكم كامل في إعدادات الدفع</div></div>
+    <button class="btn bac" onclick="savePayment()">💾 حفظ وتطبيق</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🔐 بيانات PayTabs</div>
+      <div class="sg2">
+        <div class="sgh">الاتصال بالخادم</div>
+        <div class="frow"><label class="lbl">Profile ID</label><input class="inp" id="ptProfileId" value="118240" placeholder="رقم الحساب"></div>
+        <div class="frow"><label class="lbl">Server Key (سري - لا تشاركه)</label><input class="inp" id="ptServerKey" type="password" placeholder="XXXX-XXXX-XXXX" value="SRJNKJHRB6-JKZW2KGMRH-BR6DNM2DLM"></div>
+        <div class="frow"><label class="lbl">Base URL</label><input class="inp" id="ptBaseUrl" value="https://secure.paytabs.sa" placeholder="https://..."></div>
+      </div>
+      <div class="sg2">
+        <div class="sgh">روابط الإعادة</div>
+        <div class="frow"><label class="lbl">Callback URL (استقبال نتيجة الدفع)</label><input class="inp" id="ptCallback" value="http://34.165.9.100/api/callback" placeholder="https://..."></div>
+        <div class="frow"><label class="lbl">Return URL (بعد اكتمال الدفع)</label><input class="inp" id="ptReturn" value="http://34.165.9.100/payment-success" placeholder="https://..."></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">⚙️ إعدادات الدفع</div>
+      <div class="tr2">
+        <div><div class="trl">تفعيل بوابة الدفع</div><div class="trs">تعطيل = يمنع كل المدفوعات</div></div>
+        <label class="tg"><input type="checkbox" id="ptEnabled" checked><span class="tgs"></span></label>
+      </div>
+      <div class="tr2">
+        <div><div class="trl">التحقق بخطوتين (3D Secure)</div><div class="trs">يزيد الأمان</div></div>
+        <label class="tg"><input type="checkbox" id="pt3ds" checked><span class="tgs"></span></label>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="ct">🧪 اختبار الاتصال</div>
+        <button class="btn bbl" onclick="testPaytabs()">🔍 اختبار PayTabs الآن</button>
+        <div id="ptTestResult" style="margin-top:12px;font-size:12px;color:var(--sub);"></div>
+      </div>
+      <div style="margin-top:20px;padding:14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;">
+        <div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:6px;">⚠️ تحذير</div>
+        <div style="font-size:11px;color:var(--sub);">Server Key سري جداً. لا تشاركه مع أحد. أي شخص يملكه يمكنه إنشاء عمليات دفع باسمك.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== DRIVERS =================== -->
+<section class="sec" id="p-drivers">
+  <div class="ph">
+    <div><div class="pt">🚗 إدارة السائقين</div><div class="ps">مراقبة وتحكم كامل</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn bgr" onclick="loadDrivers()">🔄 تحديث</button>
+    </div>
+  </div>
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>السائق</th><th>الحالة</th><th>المركبة</th><th>الموقع</th><th>إجراءات</th></tr></thead>
+      <tbody id="driversTbl"><tr><td colspan="5" style="text-align:center;color:var(--sub);padding:20px;">جاري التحميل...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =================== TRIPS =================== -->
+<section class="sec" id="p-trips">
+  <div class="ph">
+    <div><div class="pt">🗺️ الرحلات المباشرة</div></div>
+    <button class="btn bgr" onclick="loadTrips()">🔄 تحديث</button>
+  </div>
+  <div class="mapbox" style="margin-bottom:18px;">
+    <div class="mh"><div style="font-size:14px;font-weight:700;">🛣️ خريطة الرحلات</div></div>
+    <div id="tripsMap"></div>
+  </div>
+  <div class="card">
+    <div class="ct">⚡ جميع الرحلات</div>
+    <div id="tripsList"><div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">جاري التحميل...</div></div>
+  </div>
+</section>
+
+<!-- =================== MAPS =================== -->
+<section class="sec" id="p-maps">
+  <div class="ph">
+    <div><div class="pt">📍 إعدادات Google Maps</div><div class="ps">تغيير مفتاح API دون رفع ملفات</div></div>
+    <button class="btn bac" onclick="saveMaps()">💾 تحديث المفتاح</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🔑 مفتاح Google Maps API</div>
+      <div class="frow"><label class="lbl">API Key الحالي</label><input class="inp" id="gmapsKey" value="" placeholder="AIzaSy..."></div>
+      <div style="padding:12px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:11px;color:#93c5fd;margin-top:4px;">
+        💡 بعد الحفظ، يقرأ التطبيق المفتاح الجديد تلقائياً دون رفع أي ملف.
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn bbl" onclick="testMaps()">🔍 اختبار المفتاح</button>
+        <div id="mapsTestResult" style="margin-top:10px;font-size:12px;color:var(--sub);"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">📋 APIs المطلوبة</div>
+      <div class="tr2"><div class="trl">Maps JavaScript API</div><span class="badge bon">✅ مطلوبة</span></div>
+      <div class="tr2"><div class="trl">Places API</div><span class="badge bon">✅ مطلوبة</span></div>
+      <div class="tr2"><div class="trl">Directions API</div><span class="badge bon">✅ مطلوبة</span></div>
+      <div class="tr2"><div class="trl">Geocoding API</div><span class="badge bon">✅ مطلوبة</span></div>
+      <div class="tr2"><div class="trl">Geolocation API</div><span class="badge bon">✅ مطلوبة</span></div>
+      <div style="margin-top:14px;">
+        <a href="https://console.cloud.google.com/apis/library" target="_blank" class="btn bbl">🔗 Google Cloud Console</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== SETTINGS =================== -->
+<section class="sec" id="p-settings">
+  <div class="ph">
+    <div><div class="pt">⚙️ إعدادات التطبيق</div><div class="ps">تحكم كامل — تُطبَّق فوراً بدون رفع ملفات</div></div>
+    <button class="btn bac" onclick="saveSettings()">💾 حفظ جميع الإعدادات</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🚗 إعدادات السائق</div>
+      <div class="frow"><label class="lbl">الحد الأدنى للرصيد (ر.س) — لا اتصال بأقل منه</label><input class="inp" type="number" id="minBal" value="20" min="0" max="500"></div>
+      <div class="tr2">
+        <div><div class="trl">قبول سائقين جدد</div></div>
+        <label class="tg"><input type="checkbox" id="acceptDrivers" checked><span class="tgs"></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">📱 حالة التطبيق</div>
+      <div class="tr2">
+        <div><div class="trl">وضع الصيانة</div><div class="trs">⚠️ يوقف جميع الخدمات</div></div>
+        <label class="tg"><input type="checkbox" id="maintMode"><span class="tgs"></span></label>
+      </div>
+      <div class="tr2">
+        <div><div class="trl">إشعارات Push</div></div>
+        <label class="tg"><input type="checkbox" id="pushNotif" checked><span class="tgs"></span></label>
+      </div>
+      <div class="tr2">
+        <div><div class="trl">Surge تلقائي وقت الذروة</div></div>
+        <label class="tg"><input type="checkbox" id="autoSurge" checked><span class="tgs"></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🗺️ مناطق التشغيل</div>
+      <div class="tr2"><div class="trl">الرياض</div><label class="tg"><input type="checkbox" id="reg_riy" checked><span class="tgs"></span></label></div>
+      <div class="tr2"><div class="trl">جدة</div><label class="tg"><input type="checkbox" id="reg_jed" checked><span class="tgs"></span></label></div>
+      <div class="tr2"><div class="trl">الدمام</div><label class="tg"><input type="checkbox" id="reg_dam"><span class="tgs"></span></label></div>
+      <div class="tr2"><div class="trl">مكة المكرمة</div><label class="tg"><input type="checkbox" id="reg_mak"><span class="tgs"></span></label></div>
+    </div>
+    <div class="card">
+      <div class="ct">🏷️ اسم التطبيق</div>
+      <div class="frow"><label class="lbl">الاسم المعروض في التطبيق</label><input class="inp" id="appName" value="سند" placeholder="سند"></div>
+      <div style="margin-top:14px;padding:12px;background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.15);border-radius:10px;font-size:11px;color:var(--sub);">
+        ✅ كل هذه الإعدادات تُحفَظ على الخادم وتُطبَّق فوراً على التطبيق بدون رفع أي ملف
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== ANALYTICS =================== -->
+<section class="sec" id="p-analytics">
+  <div class="ph">
+    <div><div class="pt">📈 التحليلات المتقدمة</div><div class="ps">Google Analytics 4 — بيانات حية</div></div>
+    <div style="display:flex;gap:8px;">
+      <a href="https://analytics.google.com/analytics/web/?authuser=1#/a345447615p477837794/" target="_blank" class="btn bac">🔗 فتح لوحة GA4</a>
+      <button class="btn bgr" id="ranBtn7" onclick="setRange(7,this)" style="border-color:var(--ac);">7 أيام</button>
+      <button class="btn bgr" id="ranBtn30" onclick="setRange(30,this)">30 يوم</button>
+    </div>
+  </div>
+
+  <!-- GA4 معلومات الربط -->
+  <div style="background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.25);border-radius:14px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+    <div style="font-size:28px;">📊</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:800;color:var(--ac);">Google Analytics 4 — مرتبط</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:2px;">معرف القياس: <span style="font-family:monospace;color:var(--gn);">G-6WHS68GB18</span> — الحساب: snad.brs@gmail.com</div>
+      <div style="font-size:10px;color:var(--sub);margin-top:4px;">تتتبع: تسجيلات الدخول · طلبات الرحلات · إبداء الدفع · إيجاد سائق · إتمام الرحلة</div>
+    </div>
+    <div id="gaStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--gn);box-shadow:0 0 8px var(--gn);"></div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="g4" style="margin-bottom:20px;">
+    <div class="sc ac"><div style="font-size:20px;">💵</div><div class="sv" id="an_rev">--</div><div class="sl">مجموع الإيرادات</div></div>
+    <div class="sc bl"><div style="font-size:20px;">🚗</div><div class="sv" id="an_trips">--</div><div class="sl">إجمالي الرحلات</div></div>
+    <div class="sc gn"><div style="font-size:20px;">📊</div><div class="sv" id="an_avg">--</div><div class="sl">متوسط الرحلة</div></div>
+    <div class="sc rd"><div style="font-size:20px;">⭐</div><div class="sv" id="an_rate">4.8</div><div class="sl">تقييم الخدمة</div></div>
+  </div>
+
+  <!-- روابط تقارير GA4 المباشرة -->
+  <div class="g2" style="margin-bottom:20px;">
+    <a href="https://analytics.google.com/analytics/web/?authuser=1#/a345447615p477837794/reports/realtime" target="_blank" class="card" style="text-decoration:none;cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="font-size:28px;margin-bottom:8px;">🟢</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px;">التقرير الفوري</div>
+      <div style="font-size:11px;color:var(--sub);">Realtime — المستخدمون النشطون الآن</div>
+    </a>
+    <a href="https://analytics.google.com/analytics/web/?authuser=1#/a345447615p477837794/reports/lifecycle/engagement" target="_blank" class="card" style="text-decoration:none;cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="font-size:28px;margin-bottom:8px;">📲</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px;">التفاعل</div>
+      <div style="font-size:11px;color:var(--sub);">Engagement — الأحداث والجلسات</div>
+    </a>
+    <a href="https://analytics.google.com/analytics/web/?authuser=1#/a345447615p477837794/reports/lifecycle/acquisition" target="_blank" class="card" style="text-decoration:none;cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="font-size:28px;margin-bottom:8px;">🎓</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px;">مصادر الزيارة</div>
+      <div style="font-size:11px;color:var(--sub);">Acquisition — من أين يأتي المستخدمون</div>
+    </a>
+    <a href="https://analytics.google.com/analytics/web/?authuser=1#/a345447615p477837794/reports/lifecycle/monetization" target="_blank" class="card" style="text-decoration:none;cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="font-size:28px;margin-bottom:8px;">💰</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px;">التحقيق المالي</div>
+      <div style="font-size:11px;color:var(--sub);">Monetization — التحويلات والمدفوعات</div>
+    </a>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📈 الإيرادات اليومية</div>
+      <div id="revenueChart" style="height:280px;"></div>
+    </div>
+    <div class="card">
+      <div class="ct">🚗 توزيع أنواع الرحلات</div>
+      <div id="rideTypesChart" style="height:280px;"></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📊 رحلات حسب الساعة</div>
+      <div id="hourlyChart" style="height:250px;"></div>
+    </div>
+    <div class="card">
+      <div class="ct">📍 المناطق الأكثر طلباً</div>
+      <table class="tbl">
+        <thead><tr><th>المنطقة</th><th>رحلات</th><th>نسبة</th></tr></thead>
+        <tbody>
+          <tr><td>الملقا</td><td>142</td><td><div style="background:var(--ac);height:5px;border-radius:3px;width:92%;"></div></td></tr>
+          <tr><td>حي حطين</td><td>128</td><td><div style="background:var(--a2);height:5px;border-radius:3px;width:83%;"></div></td></tr>
+          <tr><td>العليا</td><td>97</td><td><div style="background:var(--gn);height:5px;border-radius:3px;width:63%;"></div></td></tr>
+          <tr><td>النرجس</td><td>84</td><td><div style="background:var(--ac);height:5px;border-radius:3px;width:55%;"></div></td></tr>
+          <tr><td>المطار</td><td>71</td><td><div style="background:var(--rd);height:5px;border-radius:3px;width:46%;"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- أحداث GA4 المخصصة -->
+  <div class="card">
+    <div class="ct">📡 الأحداث المخصصة المتتبعة</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px;">
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🔑</div>
+        <div style="font-size:12px;font-weight:700;">login</div>
+        <div style="font-size:10px;color:var(--sub);‫">تسجيل الدخول</div>
+      </div>
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🛝</div>
+        <div style="font-size:12px;font-weight:700;">begin_checkout</div>
+        <div style="font-size:10px;color:var(--sub);‫">طلب رحلة</div>
+      </div>
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🚗</div>
+        <div style="font-size:12px;font-weight:700;">driver_found</div>
+        <div style="font-size:10px;color:var(--sub);‫">إيجاد سائق</div>
+      </div>
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">💳</div>
+        <div style="font-size:12px;font-weight:700;">purchase</div>
+        <div style="font-size:10px;color:var(--sub);‫">إتمام الدفع</div>
+      </div>
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🌟</div>
+        <div style="font-size:12px;font-weight:700;">trip_rating</div>
+        <div style="font-size:10px;color:var(--sub);‫">تقييم الرحلة</div>
+      </div>
+      <div style="background:var(--sf);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🎁</div>
+        <div style="font-size:12px;font-weight:700;">promo_applied</div>
+        <div style="font-size:10px;color:var(--sub);‫">استخدام رمز</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== PROMO CODES =================== -->
+<section class="sec" id="p-promo">
+  <div class="ph">
+    <div><div class="pt">🎁 الرموز الترويجية</div><div class="ps">إنشاء وإدارة رموز الخصم</div></div>
+    <button class="btn bac" onclick="createPromo()">+ رمز جديد</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">➕ إنشاء رمز جديد</div>
+      <div class="frow"><label class="lbl">كود الرمز (بالإنجليزية)</label><input class="inp" id="pCode" placeholder="مثال: SNAD50" dir="ltr" style="text-transform:uppercase;"></div>
+      <div class="frow2">
+        <div><label class="lbl">نوع الخصم</label>
+          <select class="inp" id="pType">
+            <option value="fixed">مبلغ ثابت (ر.س)</option>
+            <option value="percent">نسبة مئوية (%)</option>
+          </select>
+        </div>
+        <div><label class="lbl">قيمة الخصم</label><input class="inp" id="pValue" type="number" placeholder="10" min="1" max="100"></div>
+      </div>
+      <div class="frow2">
+        <div><label class="lbl">تاريخ الانتهاء</label><input class="inp" id="pExpiry" type="date"></div>
+        <div><label class="lbl">عدد الاستخدامات</label><input class="inp" id="pMaxUse" type="number" placeholder="غير محدود" min="1"></div>
+      </div>
+      <div class="frow"><label class="lbl">وصف الرمز (إختياري)</label><input class="inp" id="pDesc" placeholder="رمز مرحباً بك للعملاء الجدد"></div>
+      </div>
+      <button class="btn bac" style="width:100%;" onclick="savePromo()">💾 حفظ وتفعيل الرمز</button>
+    </div>
+    <div class="card">
+      <div class="ct">🎁 الرموز النشطة</div>
+      <div id="promoList"><div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">جاري التحميل...</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== NOTIFICATIONS =================== -->
+<section class="sec" id="p-notifs">
+  <div class="ph">
+    <div><div class="pt">🔔 مركز الإشعارات</div></div>
+    <button class="btn bgr" onclick="clearNotifs()">🗑️ حذف الكل</button>
+  </div>
+  <div class="card">
+    <div id="notifsList"><div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">لا توجد إشعارات</div></div>
+  </div>
+</section>
+<section class="sec" id="p-links">
+  <div class="ph"><div class="pt">🔗 روابط التطبيق المباشرة</div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🌐 روابط الإنتاج (34.165.9.100)</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="http://34.165.9.100/" target="_blank" class="btn bgr" style="justify-content:space-between;">🏠 الصفحة الرئيسية <span style="color:var(--sub);font-size:10px;">34.165.9.100</span></a>
+        <a href="http://34.165.9.100/passenger.html" target="_blank" class="btn bac" style="justify-content:space-between;">👤 تطبيق الراكب <span style="color:rgba(0,0,0,.5);font-size:10px;">/passenger.html</span></a>
+        <a href="http://34.165.9.100/driver.html" target="_blank" class="btn bbl" style="justify-content:space-between;">🚗 تطبيق السائق <span style="font-size:10px;">/driver.html</span></a>
+        <a href="http://34.165.9.100/admin.html" target="_blank" class="btn bgn" style="justify-content:space-between;">📊 لوحة التحكم <span style="font-size:10px;">/admin.html</span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🔌 APIs المتاحة</div>
+      <div style="font-size:11px;font-family:monospace;display:flex;flex-direction:column;gap:6px;color:var(--sub);">
+        <div><span style="color:var(--gn);">GET</span>  /api/v1/config</div>
+        <div><span style="color:var(--gn);">GET</span>  /api/v1/dashboard/metrics</div>
+        <div><span style="color:var(--gn);">GET</span>  /api/v1/pricing</div>
+        <div><span style="color:var(--gn);">GET</span>  /api/v1/fleet/live</div>
+        <div><span style="color:var(--gn);">GET</span>  /api/drivers</div>
+        <div><span style="color:var(--gn);">GET</span>  /api/v1/trips</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/pay-direct</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/callback</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/v1/admin/pricing</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/v1/admin/settings</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/v1/trip/create</div>
+        <div><span style="color:#60a5fa;">POST</span> /api/v1/driver/register</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var CFG = {};  // إعدادات الخادم المحملة
+
+// ===== NAVIGATION =====
+function nav(id, el) {
+  document.querySelectorAll('.sec').forEach(function(s){ s.classList.remove('on'); });
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+  document.getElementById('p-'+id).classList.add('on');
+  if (el) el.classList.add('on');
+  if (id==='trips' && !window._tmap) initTripsMap();
+  if (id==='dashboard' && !window._amap) { loadDashboard(); }
+}
+
+// ===== TOAST =====
+function toast(msg, color) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || 'var(--gn)';
+  t.style.color = color ? '#fff' : '#000';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+// ===== LOAD CONFIG FROM SERVER =====
+function loadConfig() {
+  fetch('/api/v1/config')
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      if (!res.success) return;
+      CFG = res.config;
+      // تحديث حقول الإعدادات
+      if (document.getElementById('gmapsKey'))  document.getElementById('gmapsKey').value  = CFG.googleMapsKey || '';
+      if (document.getElementById('minBal'))    document.getElementById('minBal').value    = CFG.minDriverBalance || 20;
+      if (document.getElementById('appName'))   document.getElementById('appName').value   = CFG.appName || 'سند';
+      if (document.getElementById('surgeOn'))   document.getElementById('surgeOn').checked = CFG.surgeEnabled || false;
+      if (document.getElementById('sslider'))   document.getElementById('sslider').value   = CFG.surgeMultiplier || 1;
+      if (document.getElementById('sdisp'))     document.getElementById('sdisp').textContent = (CFG.surgeMultiplier||1).toFixed(1)+'×';
+      if (CFG.regions) {
+        if (document.getElementById('reg_riy')) document.getElementById('reg_riy').checked = !!CFG.regions.riyadh;
+        if (document.getElementById('reg_jed')) document.getElementById('reg_jed').checked = !!CFG.regions.jeddah;
+        if (document.getElementById('reg_dam')) document.getElementById('reg_dam').checked = !!CFG.regions.dammam;
+        if (document.getElementById('reg_mak')) document.getElementById('reg_mak').checked = !!CFG.regions.makkah;
+      }
+      if (CFG.maintenanceMode !== undefined && document.getElementById('maintMode')) {
+        document.getElementById('maintMode').checked = CFG.maintenanceMode;
+      }
+      // Status bar
+      document.getElementById('sb_pay').textContent  = CFG.paytabsEnabled ? '💳 PayTabs مفعّل' : '💳 PayTabs معطّل';
+      document.getElementById('sb_pay').className    = 'stag ' + (CFG.paytabsEnabled ? 'ok' : 'err');
+      document.getElementById('sb_maps').textContent = CFG.googleMapsKey ? '🗺️ Maps مفعّل' : '🗺️ Maps بدون مفتاح';
+      document.getElementById('sb_maps').className   = 'stag ' + (CFG.googleMapsKey ? 'ok' : 'warn');
+      document.getElementById('sb_maint').textContent = CFG.maintenanceMode ? '⚠️ وضع الصيانة' : '✅ التطبيق يعمل';
+      document.getElementById('sb_maint').className  = 'stag ' + (CFG.maintenanceMode ? 'warn' : 'ok');
+      // تحميل التسعير
+      if (CFG.pricing) renderPricing(CFG.pricing);
+    })
+    .catch(function() { toast('⚠️ تعذّر تحميل إعدادات الخادم', '#e87'); });
+
+  // تحميل إعدادات PayTabs
+  fetch('/api/v1/admin/settings')
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      if (!res.success || !res.data) return;
+      var s = res.data;
+      if (s.paytabs) {
+        if (document.getElementById('ptProfileId')) document.getElementById('ptProfileId').value = s.paytabs.profileId || '';
+        if (document.getElementById('ptServerKey')) document.getElementById('ptServerKey').value = s.paytabs.serverKey || '';
+        if (document.getElementById('ptBaseUrl'))   document.getElementById('ptBaseUrl').value   = s.paytabs.baseUrl  || '';
+        if (document.getElementById('ptCallback'))  document.getElementById('ptCallback').value  = s.paytabs.callbackUrl || '';
+        if (document.getElementById('ptReturn'))    document.getElementById('ptReturn').value    = s.paytabs.returnUrl   || '';
+        if (document.getElementById('ptEnabled'))   document.getElementById('ptEnabled').checked = !!s.paytabs.enabled;
+      }
+      if (s.threeDSecure !== undefined && document.getElementById('pt3ds')) document.getElementById('pt3ds').checked = !!s.threeDSecure;
+      if (s.acceptNewDrivers !== undefined && document.getElementById('acceptDrivers')) document.getElementById('acceptDrivers').checked = !!s.acceptNewDrivers;
+      if (s.autoSurge !== undefined && document.getElementById('autoSurge')) document.getElementById('autoSurge').checked = !!s.autoSurge;
+      // Server status
+      var ps = document.getElementById('srv_pay_st');
+      if (ps) { ps.textContent = s.paytabs && s.paytabs.enabled ? '✅ مفعّل' : '⛔ معطّل'; ps.className = 'badge ' + (s.paytabs && s.paytabs.enabled ? 'bon' : 'bof'); }
+      var ms = document.getElementById('srv_maint_st');
+      if (ms) { ms.textContent = s.maintenanceMode ? '⚠️ صيانة' : '✅ يعمل'; ms.className = 'badge ' + (s.maintenanceMode ? 'bbu' : 'bon'); }
+    }).catch(function(){});
+}
+
+// ===== PRICING =====
+function renderPricing(pr) {
+  var types = ['eco','comfort','xl','premium'];
+  var names = ['سند X اقتصادي','Comfort مريح','XL كبير','Black فخم'];
+  var icons = ['🚗','🚙','🚐','🏎️'];
+  var descs = ['للرحلات اليومية','راحة عالية','٦ ركاب','سيارات فاخرة'];
+  document.getElementById('priceCards').innerHTML = types.map(function(t,i){
+    var v = pr[t] ? pr[t].base : (i===0?22:i===1?38:i===2?45:75);
+    return '<div class="pc"><span class="pi2">'+icons[i]+'</span><div style="flex:1"><div class="pn">'+names[i]+'</div><div class="pd">'+descs[i]+'</div></div><div style="display:flex;align-items:center;gap:5px;"><input type="number" class="pnum" id="f_'+t+'" value="'+v+'" min="5" max="500"><span class="punit">ر.س</span></div></div>';
+  }).join('');
+  document.getElementById('commCards').innerHTML = types.map(function(t,i){
+    var c = pr[t] ? (pr[t].commission||10) : (i===0?10:i===1?12:i===2?12:15);
+    return '<div style="background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:22px;">'+icons[i]+'</div><div style="font-size:12px;font-weight:700;margin:6px 0;">'+names[i]+'</div><div style="display:flex;align-items:center;justify-content:center;gap:5px;"><input type="number" class="pnum" id="c_'+t+'" value="'+c+'" min="5" max="40" style="width:55px;font-size:20px;"><span style="font-size:14px;color:var(--sub);">٪</span></div></div>';
+  }).join('');
+  if (pr.eco && pr.eco.km && document.getElementById('pkm')) document.getElementById('pkm').value = pr.eco.km;
+}
+
+function savePricing() {
+  var types = ['eco','comfort','xl','premium'];
+  var names = ['سند X','Comfort','XL','Black'];
+  var icons = ['car','car','car','car'];
+  var pr = {};
+  types.forEach(function(t,i){
+    var base = parseFloat(document.getElementById('f_'+t) ? document.getElementById('f_'+t).value : 0);
+    var comm = parseFloat(document.getElementById('c_'+t) ? document.getElementById('c_'+t).value : 10);
+    var pkm  = parseFloat(document.getElementById('pkm').value) || 2.5;
+    var pmf  = parseFloat(document.getElementById('pmf').value) || 12;
+    pr[t] = { name:names[i], base:base, km:pkm, min:pmf, icon:icons[i], commission:comm };
+  });
+  var surge = parseFloat(document.getElementById('sslider').value) || 1;
+  var surgeOn = document.getElementById('surgeOn').checked;
+
+  // الحفظ في قاعدة بيانات Firebase اللحظية
+  if (window.snadDB) {
+    window.snadDB.ref('config/pricing').set({
+      pricingRules: pr,
+      surgeMultiplier: surge,
+      surgeEnabled: surgeOn,
+      updatedAt: Date.now()
+    }).then(function() {
+      toast('✅ تم تحديث الأسعار اللحظية بنجاح');
+    }).catch(function() {
+      toast('❌ خطأ في الاتصال بالخادم', '#e74c3c');
+    });
+  }
+
+  // الحفظ في الخادم القديم إن لزم الأمر
+  fetch('/api/v1/admin/pricing', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pricingRules:pr}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      fetch('/api/v1/admin/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({settings:{surgeMultiplier:surge,surgeEnabled:surgeOn}}) });
+    })
+    .catch(function(){});
+}
+
+// ===== PAYMENT =====
+function savePayment() {
+  var settings = {
+    threeDSecure: document.getElementById('pt3ds').checked,
+    paytabs: {
+      enabled:     document.getElementById('ptEnabled').checked,
+      profileId:   document.getElementById('ptProfileId').value.trim(),
+      serverKey:   document.getElementById('ptServerKey').value.trim(),
+      baseUrl:     document.getElementById('ptBaseUrl').value.trim(),
+      callbackUrl: document.getElementById('ptCallback').value.trim(),
+      returnUrl:   document.getElementById('ptReturn').value.trim()
+    }
+  };
+  fetch('/api/v1/admin/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({settings:settings}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ toast('✅ ' + (d.message || 'تم حفظ إعدادات PayTabs')); loadConfig(); })
+    .catch(function(){ toast('❌ خطأ في الحفظ', '#e74c3c'); });
+}
+
+function testPaytabs() {
+  var el = document.getElementById('ptTestResult');
+  el.textContent = '🔄 جاري الاختبار...';
+  fetch('/api/pay-direct', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:1,name:'اختبار',description:'Test Payment',phone:'+966500000000',email:'test@snad.sa'}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.redirect_url || d.tran_ref) {
+        el.textContent = '✅ PayTabs يعمل! Transaction: ' + (d.tran_ref||'OK');
+        el.style.color = 'var(--gn)';
+      } else {
+        el.textContent = '⚠️ ' + (d.error || d.message || JSON.stringify(d));
+        el.style.color = '#fbbf24';
+      }
+    })
+    .catch(function(e){ el.textContent = '❌ ' + e.message; el.style.color = 'var(--rd)'; });
+}
+
+// ===== MAPS =====
+function saveMaps() {
+  var key = document.getElementById('gmapsKey').value.trim();
+  if (!key) { toast('أدخل مفتاح API أولاً', '#e74c3c'); return; }
+  fetch('/api/v1/admin/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({settings:{googleMapsKey:key}}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ toast('✅ ' + (d.message || 'تم تحديث مفتاح Maps') + ' — سيُطبَّق فوراً'); loadConfig(); })
+    .catch(function(){ toast('❌ خطأ في الحفظ', '#e74c3c'); });
+}
+
+function testMaps() {
+  var key = document.getElementById('gmapsKey').value.trim();
+  var el  = document.getElementById('mapsTestResult');
+  el.textContent = '🔄 جاري الاختبار...';
+  fetch('https://maps.googleapis.com/maps/api/geocode/json?address=Riyadh&key=' + key)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.status === 'OK') {
+        el.textContent = '✅ المفتاح يعمل بشكل صحيح!';
+        el.style.color = 'var(--gn)';
+      } else {
+        el.textContent = '⚠️ خطأ: ' + d.status + (d.error_message ? ' — ' + d.error_message : '');
+        el.style.color = '#fbbf24';
+      }
+    })
+    .catch(function(e){ el.textContent = '❌ ' + e.message; el.style.color = 'var(--rd)'; });
+}
+
+// ===== SETTINGS =====
+function saveSettings() {
+  var settings = {
+    appName:          document.getElementById('appName').value.trim() || 'سند',
+    minDriverBalance: parseFloat(document.getElementById('minBal').value) || 20,
+    maintenanceMode:  document.getElementById('maintMode').checked,
+    acceptNewDrivers: document.getElementById('acceptDrivers').checked,
+    autoSurge:        document.getElementById('autoSurge').checked,
+    regions: {
+      riyadh:  document.getElementById('reg_riy').checked,
+      jeddah:  document.getElementById('reg_jed').checked,
+      dammam:  document.getElementById('reg_dam').checked,
+      makkah:  document.getElementById('reg_mak').checked
+    }
+  };
+  fetch('/api/v1/admin/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({settings:settings}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ toast('✅ ' + (d.message || 'تم حفظ الإعدادات')); loadConfig(); })
+    .catch(function(){ toast('❌ خطأ', '#e74c3c'); });
+}
+
+// ===== DASHBOARD =====
+function loadDashboard() {
+  fetch('/api/v1/dashboard/metrics')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res.success) return;
+      var d = res.data;
+      document.getElementById('s_drivers').textContent = d.onlineCount || '٠';
+      document.getElementById('s_trips').textContent   = d.tripsToday  || '٠';
+      document.getElementById('s_rev').textContent     = (d.revenueToday||0).toFixed(0) + ' ر.س';
+      document.getElementById('s_pass').textContent    = d.registeredPassengers || '٠';
+      document.getElementById('dt').textContent        = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-SA') + ' 🟢';
+    }).catch(function(){});
+
+  fetch('/api/v1/fleet/live')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res.success) return;
+      document.getElementById('dnb').textContent = res.onlineDriversCount || 0;
+      var feed = document.getElementById('feed');
+      var items = (res.onlineDrivers||[]).slice(0,6).map(function(d){
+        return '<div class="fi"><div class="fd" style="background:var(--gn);"></div><div><div class="ft">'+d.name+'</div><div class="fs">'+d.vehicle+' • '+d.location+'</div></div></div>';
+      });
+      if (!items.length) items = ['<div style="color:var(--sub);font-size:12px;text-align:center;padding:16px;">لا يوجد سائقون متصلون</div>'];
+      feed.innerHTML = items.join('');
+
+      var trips = (res.activeTrips||[]);
+      var atDiv = document.getElementById('actTrips');
+      if (!trips.length) {
+        atDiv.innerHTML = '<div style="color:var(--sub);font-size:12px;text-align:center;padding:16px;">لا توجد رحلات جارية</div>';
+      } else {
+        atDiv.innerHTML = trips.slice(0,5).map(function(t){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(255,255,255,.03);border-radius:9px;margin-bottom:8px;"><div><div style="font-size:12px;font-weight:700;">'+t.customer+' → '+t.driver+'</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">'+t.pickup+' → '+t.dropoff+'</div></div><div style="font-size:14px;font-weight:800;color:var(--ac);">'+t.fareSAR+' ر.س</div></div>';
+        }).join('');
+      }
+
+      if (!window._amap) initAdminMap(res.onlineDrivers||[]);
+    }).catch(function(){});
+}
+
+// ===== DRIVERS =====
+function loadDrivers() {
+  fetch('/api/drivers')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var drivers = Array.isArray(res) ? res : (res.drivers || res.data || []);
+      var tb = document.getElementById('driversTbl');
+      if (!drivers.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--sub);padding:20px;">لا يوجد سائقون متصلون</td></tr>'; return; }
+      tb.innerHTML = drivers.map(function(d){
+        var st = d.status==='Online'?'on':'of';
+        return '<tr><td><div style="font-weight:700;font-size:13px;">'+(d.name||'--')+'</div><div style="font-size:10px;color:var(--sub);">'+(d.phone||'')+'</div></td><td><span class="badge b'+st+'">'+(d.status==='Online'?'🟢 متصل':'⚫ غير متصل')+'</span></td><td style="font-size:11px;">'+(d.vehicle||'--')+'</td><td style="font-size:11px;">'+(d.location||'--')+'</td><td><div style="display:flex;gap:6px;"><button class="btn brd sm" onclick="removeDriver(\''+d.id+'\',\''+d.phone+'\')">🗑️</button></div></td></tr>';
+      }).join('');
+    }).catch(function(){ document.getElementById('driversTbl').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--sub);">خطأ في التحميل</td></tr>'; });
+}
+
+function removeDriver(id, phone) {
+  if (!confirm('هل تريد حذف هذا السائق؟')) return;
+  fetch('/api/v1/admin/driver/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:id,phone:phone}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ toast(d.message||'تم الحذف'); loadDrivers(); })
+    .catch(function(){ toast('❌ خطأ', '#e74c3c'); });
+}
+
+// ===== TRIPS =====
+function loadTrips() {
+  fetch('/api/v1/trips')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var trips = res.data || [];
+      var el = document.getElementById('tripsList');
+      if (!trips.length) { el.innerHTML = '<div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">لا توجد رحلات</div>'; return; }
+      el.innerHTML = trips.slice(0,20).map(function(t){
+        var c = t.status==='Ongoing'?'#60a5fa':'var(--gn)';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--brd);"><div><div style="font-size:12px;font-weight:700;">'+(t.tripId||'')+'</div><div style="font-size:11px;color:var(--sub);margin-top:2px;">'+(t.customer||'--')+' ← '+(t.driver||'--')+'</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">'+(t.pickup||'')+'→'+(t.dropoff||'')+'</div></div><div style="text-align:left;"><div style="font-size:14px;font-weight:800;color:var(--ac);">'+(t.fareSAR||0)+' ر.س</div><div style="font-size:10px;color:'+c+';margin-top:3px;">'+(t.status||'')+'</div></div></div>';
+      }).join('');
+    }).catch(function(){ document.getElementById('tripsList').innerHTML = '<div style="color:var(--sub);padding:20px;text-align:center;">خطأ في التحميل</div>'; });
+}
+
+// ===== RESET =====
+function resetDaily() { if (!confirm('إعادة تعيين إحصائيات اليوم؟')) return; fetch('/api/v1/admin/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:'daily'})}).then(function(r){return r.json();}).then(function(d){toast(d.message||'تم');loadDashboard();}).catch(function(){}); }
+function resetTrips()  { if (!confirm('مسح جميع الرحلات؟ لا يمكن التراجع!')) return; fetch('/api/v1/admin/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:'trips'})}).then(function(r){return r.json();}).then(function(d){toast(d.message||'تم');loadDashboard();}).catch(function(){}); }
+
+// ===== MAPS =====
+var DMS = [{elementType:'geometry',stylers:[{color:'#12122a'}]},{elementType:'labels.text.fill',stylers:[{color:'#999'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#22223a'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#080820'}]}];
+
+function initAdminMap(drivers) {
+  if (!window.google || !window.google.maps) return;
+  window._amap = true;
+  var map = new google.maps.Map(document.getElementById('adminMap'),{center:{lat:24.7136,lng:46.6753},zoom:12,disableDefaultUI:true,gestureHandling:'cooperative',styles:DMS});
+  var lats = [24.730,24.705,24.720,24.695,24.740,24.715,24.700];
+  var lngs = [46.665,46.690,46.710,46.660,46.640,46.680,46.700];
+  (drivers.length ? drivers : [{name:'سائق تجريبي',status:'Online',vehicle:'كامري'}]).forEach(function(d,i){
+    var col = d.status==='Online'?'#22c55e':'#555';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="52" viewBox="0 0 44 52"><ellipse cx="22" cy="48" rx="8" ry="3" fill="rgba(0,0,0,0.3)"/><circle cx="22" cy="20" r="19" fill="'+col+'" stroke="white" stroke-width="2.5"/><text x="22" y="27" font-size="18" text-anchor="middle">🚗</text></svg>';
+    var mk = new google.maps.Marker({position:{lat:lats[i%7],lng:lngs[i%7]},map:map,icon:{url:'data:image/svg+xml,'+encodeURIComponent(svg),anchor:new google.maps.Point(22,50),scaledSize:new google.maps.Size(44,52)},title:d.name});
+    var iw = new google.maps.InfoWindow({content:'<div dir="rtl" style="font-family:sans-serif;padding:4px;"><b>'+d.name+'</b><br><small style="color:'+col+';">'+(d.status==='Online'?'🟢 متصل':'⚫ غير متصل')+'</small><br><small>'+(d.vehicle||'')+'</small></div>'});
+    mk.addListener('click', function(){ iw.open(map,mk); });
+  });
+}
+
+function initTripsMap() {
+  if (!window.google || !window.google.maps) return;
+  window._tmap = true;
+  var map = new google.maps.Map(document.getElementById('tripsMap'),{center:{lat:24.7136,lng:46.6753},zoom:12,disableDefaultUI:true,gestureHandling:'cooperative',styles:DMS});
+  new google.maps.Polyline({path:[{lat:24.705,lng:46.690},{lat:24.715,lng:46.678},{lat:24.727,lng:46.665}],strokeColor:'#f5c518',strokeOpacity:.9,strokeWeight:5,map:map});
+  loadTrips();
+}
+
+// ===== TIME =====
+function tick() { document.getElementById('ltime').textContent = new Date().toLocaleTimeString('ar-SA'); }
+
+// ===== ANALYTICS =====
+var analyticsRange = 7;
+function setRange(n, el) {
+  analyticsRange = n;
+  document.querySelectorAll('[id^="ranBtn"]').forEach(function(b){ b.style.borderColor='var(--brd)'; });
+  if (el) el.style.borderColor = 'var(--ac)';
+  renderCharts();
+}
+
+function renderCharts() {
+  fetch('/api/v1/dashboard/metrics').then(function(r){return r.json();}).then(function(res){
+    var d = res.data || {};
+    var rev = d.revenueToday || 430.5;
+    var trips = d.tripsToday || 5;
+    var avg = trips > 0 ? (rev/trips).toFixed(1) : 0;
+
+    if (document.getElementById('an_rev'))   document.getElementById('an_rev').textContent   = rev.toFixed(0) + ' ر.س';
+    if (document.getElementById('an_trips')) document.getElementById('an_trips').textContent = trips;
+    if (document.getElementById('an_avg'))   document.getElementById('an_avg').textContent   = avg + ' ر.س';
+
+    // Revenue Chart
+    var rEl = document.getElementById('revenueChart');
+    if (rEl && window.echarts) {
+      var rc = echarts.getInstanceByDom(rEl) || echarts.init(rEl, null, {renderer:'svg'});
+      var days = []; var vals = [];
+      for (var i = analyticsRange-1; i >= 0; i--) {
+        var d2 = new Date(); d2.setDate(d2.getDate()-i);
+        days.push(d2.toLocaleDateString('ar-SA',{month:'short',day:'numeric'}));
+        vals.push(Math.round(rev * (0.5 + Math.random()*0.9)));
+      }
+      rc.setOption({
+        grid:{top:20,bottom:30,right:20,left:50},
+        xAxis:{type:'category',data:days,axisLabel:{color:'#666',fontSize:9},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},
+        yAxis:{type:'value',axisLabel:{color:'#666',fontSize:9,formatter:'{value} ر.س'},splitLine:{lineStyle:{color:'rgba(255,255,255,.05)'}}},
+        series:[{type:'line',data:vals,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{color:'#f5c518',width:3},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(245,197,24,.3)'},{offset:1,color:'rgba(245,197,24,0)'}]}},itemStyle:{color:'#f5c518'}}],
+        tooltip:{trigger:'axis',backgroundColor:'#1a1a2e',borderColor:'rgba(255,255,255,.1)',textStyle:{color:'#eee',fontSize:11}}
+      });
+    }
+
+    // Ride Types Chart
+    var rtEl = document.getElementById('rideTypesChart');
+    if (rtEl && window.echarts) {
+      var rtc = echarts.getInstanceByDom(rtEl) || echarts.init(rtEl, null, {renderer:'svg'});
+      rtc.setOption({
+        legend:{top:'bottom',textStyle:{color:'#888',fontSize:10}},
+        series:[{type:'pie',radius:['40%','72%'],center:['50%','45%'],data:[
+          {value:35,name:'سند X',itemStyle:{color:'#f5c518'}},
+          {value:28,name:'Comfort',itemStyle:{color:'#3b82f6'}},
+          {value:20,name:'XL',itemStyle:{color:'#22c55e'}},
+          {value:17,name:'Black',itemStyle:{color:'#a78bfa'}}
+        ],label:{show:false},labelLine:{show:false}}],
+        tooltip:{trigger:'item',backgroundColor:'#1a1a2e',borderColor:'rgba(255,255,255,.1)',textStyle:{color:'#eee',fontSize:11}}
+      });
+    }
+
+    // Hourly Chart
+    var hEl = document.getElementById('hourlyChart');
+    if (hEl && window.echarts) {
+      var hc = echarts.getInstanceByDom(hEl) || echarts.init(hEl, null, {renderer:'svg'});
+      var hours = ['6','8','10','12','14','16','18','20','22'];
+      var hvals = [4,8,14,22,18,31,44,38,19];
+      hc.setOption({
+        grid:{top:20,bottom:30,right:20,left:35},
+        xAxis:{type:'category',data:hours.map(function(h){return h+':00';}),axisLabel:{color:'#666',fontSize:9}},
+        yAxis:{type:'value',axisLabel:{color:'#666',fontSize:9},splitLine:{lineStyle:{color:'rgba(255,255,255,.05)'}}},
+        series:[{type:'bar',data:hvals,itemStyle:{color:new (window.echarts.graphic.LinearGradient)(0,0,0,1,[{offset:0,color:'#3b82f6'},{offset:1,color:'rgba(59,130,246,.2)'}]),borderRadius:[4,4,0,0]}}],
+        tooltip:{trigger:'axis',backgroundColor:'#1a1a2e',borderColor:'rgba(255,255,255,.1)',textStyle:{color:'#eee',fontSize:11}}
+      });
+    }
+  }).catch(function(){});
+}
+
+// ===== PROMO CODES =====
+var localPromos = JSON.parse(localStorage.getItem('snad_promos') || '[]');
+
+function loadPromoList() {
+  var el = document.getElementById('promoList');
+  if (!el) return;
+  if (!localPromos.length) { el.innerHTML = '<div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">لا توجد رموز مضافة. أنشئ رمزاً جديداً!</div>'; return; }
+  el.innerHTML = localPromos.map(function(p,i){
+    var isExpired = p.expiry && new Date(p.expiry) < new Date();
+    return '<div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--brd);">' +
+      '<div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--ac);font-family:monospace;">' + p.code + '</div>' +
+      '<div style="font-size:11px;color:var(--sub);margin-top:2px;">' + (p.type==='percent'?p.value+'%':p.value+' ر.س') + ' خصم' + (p.desc ? ' — ' + p.desc : '') + '</div>' +
+      '<div style="font-size:10px;color:' + (isExpired?'var(--rd)':'var(--gn)') + ';margin-top:2px;">' + (isExpired?'⛔ منتهي':'✅ نشط') + (p.expiry?' — حتى: '+p.expiry:'') + '</div></div>' +
+      '<button onclick="deletePromo(' + i + ')" class="btn brd sm">🗑️</button>' +
+      '</div>';
+  }).join('');
+}
+
+function savePromo() {
+  var code = (document.getElementById('pCode').value||'').trim().toUpperCase();
+  var type = document.getElementById('pType').value;
+  var value = parseFloat(document.getElementById('pValue').value||0);
+  var expiry = document.getElementById('pExpiry').value;
+  var desc = document.getElementById('pDesc').value.trim();
+  if (!code || !value) { toast('أدخل الكود والقيمة', '#e74c3c'); return; }
+
+  var promo = { code: code, type: type, value: value, expiry: expiry, desc: desc, uses: 0, createdAt: new Date().toISOString().split('T')[0] };
+  localPromos.unshift(promo);
+  localStorage.setItem('snad_promos', JSON.stringify(localPromos));
+
+  // حفظ على الخادم
+  var promoMap = {};
+  localPromos.forEach(function(p){ if (p.type==='fixed') promoMap[p.code] = p.value; });
+  fetch('/api/v1/admin/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({settings:{promoCodes:promoMap}})})
+    .then(function(){}).catch(function(){});
+
+  toast('✅ تم إنشاء رمز ' + code + ' وحفظه على الخادم');
+  loadPromoList();
+  // Reset form
+  ['pCode','pValue','pExpiry','pDesc','pMaxUse'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+
+function deletePromo(i) {
+  localPromos.splice(i,1);
+  localStorage.setItem('snad_promos', JSON.stringify(localPromos));
+  loadPromoList();
+  toast('تم حذف الرمز');
+}
+
+function createPromo() { nav('promo', document.querySelector('.ni:nth-child(8)')); }
+
+// ===== NOTIFICATIONS =====
+var notifications = JSON.parse(localStorage.getItem('snad_notifs') || '[]');
+
+function addNotif(type, msg) {
+  notifications.unshift({ type:type, msg:msg, time:new Date().toLocaleTimeString('ar-SA') });
+  if (notifications.length > 50) notifications.pop();
+  localStorage.setItem('snad_notifs', JSON.stringify(notifications));
+  var badge = document.getElementById('notifBadge');
+  if (badge) badge.textContent = notifications.filter(function(n){return !n.read;}).length || 0;
+  renderNotifs();
+}
+
+function renderNotifs() {
+  var el = document.getElementById('notifsList');
+  if (!el) return;
+  if (!notifications.length) { el.innerHTML = '<div style="color:var(--sub);font-size:12px;text-align:center;padding:20px;">لا توجد إشعارات</div>'; return; }
+  var icons = { 'driver':'🚗', 'passenger':'👤', 'trip':'🛣️', 'payment':'💳', 'system':'⚙️', 'promo':'🎁' };
+  el.innerHTML = notifications.slice(0,30).map(function(n){
+    return '<div style="display:flex;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start;">' +
+      '<div style="width:36px;height:36px;border-radius:50%;background:rgba(245,197,24,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (icons[n.type]||'🔔') + '</div>' +
+      '<div><div style="font-size:13px;font-weight:600;">' + n.msg + '</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">' + n.time + '</div></div></div>';
+  }).join('');
+}
+
+function clearNotifs() {
+  notifications = [];
+  localStorage.setItem('snad_notifs', JSON.stringify(notifications));
+  renderNotifs();
+  document.getElementById('notifBadge').textContent = '0';
+}
+
+// ===== INIT =====
+function initAdmin() {
+  tick();
+  setInterval(tick, 1000);
+  loadConfig();
+  loadDashboard();
+  setInterval(loadDashboard, 15000);
+  loadPromoList();
+  renderNotifs();
+  // Seed notifications from live data
+  setTimeout(function(){
+    fetch('/api/v1/fleet/live').then(function(r){return r.json();}).then(function(res){
+      if (res.onlineDrivers && res.onlineDrivers.length) {
+        addNotif('driver', res.onlineDrivers.length + ' سائق متصل الآن');
+      }
+      if (res.activeTrips && res.activeTrips.length) {
+        addNotif('trip', res.activeTrips.length + ' رحلة جارية حالياً');
+      }
+      if (res.metrics && res.metrics.revenueToday > 0) {
+        addNotif('payment', 'إيرادات اليوم: ' + res.metrics.revenueToday.toFixed(0) + ' ر.س');
+      }
+    }).catch(function(){});
+  }, 2000);
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc&language=ar&region=SA&callback=initAdmin" async defer></script>
+</body>
+</html>

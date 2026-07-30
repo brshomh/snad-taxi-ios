@@ -1,0 +1,3913 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>سند | تطبيق الراكب</title>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6WHS68GB18"><\/script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-6WHS68GB18', {
+      'page_title': 'سند - تطبيق الراكب',
+      'page_location': window.location.href,
+      'send_page_view': true
+    });
+  <\/script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" type="image/jpeg" href="assets/logo-user.jpg">
+  <link rel="apple-touch-icon" href="assets/logo-user.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="js/firebase-init.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    :root {
+      --black: #000;
+      --white: #fff;
+      --surface: #f6f6f6;
+      --border: #e8e8e8;
+      --text-primary: #000;
+      --text-secondary: #717171;
+      --text-hint: #adadad;
+      --accent: #000;
+      --green: #008000;
+      --green-bg: #f0fff0;
+      --red: #c0392b;
+      --red-bg: #fff0f0;
+      --blue: #276ef1;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+    }
+
+    html { direction:rtl; }
+
+    body {
+      font-family:'Cairo',sans-serif;
+      background: var(--white);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      max-width: 430px;
+      height: 100vh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    /* =====================
+       SCREEN SYSTEM
+    ===================== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--white);
+      z-index: 1;
+    }
+    .screen.active { display: flex; }
+
+    /* =====================
+       LOGIN SCREEN
+    ===================== */
+    #loginScreen {
+      background: var(--black);
+      flex-direction: column;
+    }
+
+    .login-top {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 0 28px 36px;
+    }
+
+    .login-logo {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -2px;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .login-headline {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .login-bottom {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 28px 24px 36px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .uber-input {
+      width: 100%;
+      padding: 16px 18px;
+      background: var(--surface);
+      border: 1.5px solid transparent;
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--black);
+      outline: none;
+      transition: all 0.2s ease;
+      direction: rtl;
+    }
+
+    .uber-input:focus {
+      background: var(--white);
+      border-color: var(--black);
+    }
+
+    .uber-input::placeholder { color: var(--text-hint); }
+
+    .btn-uber {
+      width: 100%;
+      padding: 17px;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Cairo', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-uber:hover { background: #1a1a1a; transform: translateY(-1px); }
+    .btn-uber:active { transform: translateY(0); }
+
+    .btn-uber-outline {
+      width: 100%;
+      padding: 16px;
+      background: var(--white);
+      color: var(--black);
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+
+    .btn-uber-outline:hover { background: var(--surface); }
+
+    .login-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-hint);
+    }
+
+    .login-footer a { color: var(--black); font-weight: 700; text-decoration: none; }
+
+    /* =====================
+       MAIN MAP SCREEN
+    ===================== */
+    .map-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #f0ede6;
+    }
+
+    .map-svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Uber-style map colors */
+    .m-bg { fill: #f0ede6; }
+    .m-road { stroke: #fff; stroke-width: 5; fill: none; stroke-linecap: round; }
+    .m-road-main { stroke: #fff; stroke-width: 11; fill: none; stroke-linecap: round; }
+    .m-road-major { stroke: #fff; stroke-width: 16; fill: none; stroke-linecap: round; }
+    .m-block { fill: #e8e3d8; rx: 3; }
+    .m-block-dark { fill: #ddd8cc; }
+    .m-park { fill: #c8dfc0; }
+    .m-water { fill: #aaccee; }
+    .m-road-label { fill: #9a9080; font-family:'Cairo',sans-serif; font-size:9px; }
+
+    .route-line {
+      stroke: #276ef1;
+      stroke-width: 4;
+      fill: none;
+      stroke-linecap: round;
+      opacity: 0;
+      filter: drop-shadow(0 0 4px rgba(39,110,241,0.4));
+    }
+
+    .pickup-marker circle.outer { fill: var(--black); }
+    .pickup-marker circle.inner { fill: var(--white); }
+    .dropoff-marker { fill: var(--black); }
+
+    .my-dot-outer { fill: var(--blue); opacity: 0.2; }
+    .my-dot-inner { fill: var(--blue); }
+    .my-dot-pulse { fill: var(--blue); opacity: 0.3; animation: radialPulse 2s ease-out infinite; }
+
+    @keyframes radialPulse {
+      0% { r: 8; opacity: 0.3; }
+      100% { r: 22; opacity: 0; }
+    }
+
+    /* Black header bar on map */
+    .map-header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 16px 16px 12px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0) 100%);
+    }
+
+    .map-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--black);
+      letter-spacing: -1px;
+      flex: 1;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: var(--shadow-md);
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover { transform: scale(1.05); }
+
+    .profile-icon-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--black);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      font-size: 18px;
+      color: var(--white);
+      font-weight: 800;
+    }
+
+    /* Floating map controls */
+    .map-fab-group {
+      position: absolute;
+      left: 14px;
+      bottom: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .map-fab {
+      width: 42px;
+      height: 42px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: var(--shadow-md);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--black);
+      transition: all 0.2s ease;
+    }
+
+    .map-fab:hover { transform: scale(1.05); box-shadow: var(--shadow-lg); }
+
+    /* Animated cars on map */
+    .ambient-car {
+      opacity: 0.7;
+      transition: all 2s ease;
+    }
+
+    /* =====================
+       BOTTOM SHEET
+    ===================== */
+    .bottom-sheet {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+      z-index: 30;
+      overflow: hidden;
+      transition: height 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .sheet-handle-wrap {
+      padding: 10px 0 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+    }
+
+    .sheet-inner { padding: 14px 20px 24px; }
+
+    /* Where to input */
+    .where-to-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1.5px solid transparent;
+    }
+
+    .where-to-bar:hover { background: #eee; }
+    .where-to-bar:focus-within { border-color: var(--black); background: var(--white); }
+
+    .where-icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .where-icon.pickup { background: var(--black); }
+    .where-icon.dropoff { background: var(--black); border-radius: 3px; }
+
+    .where-text { flex: 1; font-size: 14px; font-weight: 600; }
+    .where-text.empty { color: var(--text-hint); font-weight: 400; }
+
+    .location-dots {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding-right: 4px;
+      padding-bottom: 2px;
+    }
+    .loc-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+
+    /* Saved places row */
+    .quick-places {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .quick-places::-webkit-scrollbar { display: none; }
+
+    .quick-place {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border-radius: 99px;
+      padding: 8px 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .quick-place:hover { background: #e5e5e5; }
+
+    /* =====================
+       RIDE TYPE SELECTOR
+    ===================== */
+    .ride-types-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-bottom: 16px;
+    }
+    .ride-types-scroll::-webkit-scrollbar { display: none; }
+
+    .ride-card {
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      min-width: 96px;
+      background: var(--white);
+    }
+
+    .ride-card.selected {
+      border-color: var(--black);
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .ride-card:hover:not(.selected) { border-color: #bbb; background: var(--surface); }
+
+    .ride-card-icon { font-size: 26px; margin-bottom: 4px; }
+    .ride-card-name { font-size: 12px; font-weight: 700; }
+    .ride-card-time { font-size: 11px; opacity: 0.6; }
+
+    /* =====================
+       REQUEST BUTTON
+    ===================== */
+    .request-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fare-estimate {
+      flex-shrink: 0;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .fare-value { font-size: 16px; font-weight: 800; }
+    .fare-label { font-size: 10px; color: var(--text-secondary); }
+
+    .btn-request {
+      flex: 1;
+      padding: 17px;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Cairo', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-request:hover { background: #1a1a1a; transform: translateY(-1px); }
+    .btn-request:active { transform: translateY(0); }
+    .btn-request:disabled { opacity: 0.3; cursor: default; transform: none; }
+
+    /* =====================
+       SEARCHING OVERLAY
+    ===================== */
+    .overlay-dark {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 40;
+      display: none;
+      align-items: flex-end;
+    }
+
+    .overlay-dark.active { display: flex; }
+
+    .search-card {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 24px 32px;
+      width: 100%;
+    }
+
+    .search-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .search-spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--black);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .search-title { font-size: 17px; font-weight: 800; }
+    .search-sub { font-size: 13px; color: var(--text-secondary); }
+
+    /* Animated dots */
+    .searching-dots span {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--black);
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: dotBounce 1s ease infinite;
+    }
+    .searching-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .searching-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .nearby-count {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .nearby-icon { font-size: 20px; }
+    .nearby-text { font-size: 13px; color: var(--text-secondary); }
+    .nearby-num { font-size: 16px; font-weight: 800; }
+
+    .btn-cancel-round {
+      width: 100%;
+      padding: 15px;
+      background: var(--surface);
+      color: var(--black);
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cancel-round:hover { background: #e5e5e5; }
+
+    /* =====================
+       ACTIVE TRIP SHEET
+    ===================== */
+    .trip-sheet {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      padding: 20px 20px 32px;
+    }
+
+    .driver-card-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .driver-ava {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+    }
+
+    .driver-name-txt { font-size: 16px; font-weight: 800; }
+    .driver-plate-txt {
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 3px;
+      direction: ltr;
+    }
+
+    .driver-rating-txt {
+      margin-right: auto;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* ETA Bar */
+    .eta-bar {
+      background: var(--black);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .eta-icon { font-size: 22px; }
+    .eta-text { flex: 1; font-size: 14px; font-weight: 600; }
+    .eta-time { font-size: 18px; font-weight: 900; }
+
+    .trip-progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .trip-progress-fill {
+      height: 100%;
+      background: var(--black);
+      border-radius: 99px;
+      transition: width 0.5s ease;
+      width: 15%;
+    }
+
+    .trip-actions-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .trip-action-btn {
+      flex: 1;
+      padding: 13px 10px;
+      background: var(--surface);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .trip-action-btn:hover { background: #e5e5e5; }
+
+    .btn-cancel-trip {
+      flex: 1;
+      padding: 13px;
+      background: var(--red-bg, #fff0f0);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cancel-trip:hover { opacity: 0.85; }
+
+    /* =====================
+       RATING SCREEN
+    ===================== */
+    .rating-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 50;
+      display: none;
+      align-items: flex-end;
+    }
+
+    .rating-overlay.active { display: flex; }
+
+    .rating-card {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 28px 24px 36px;
+      width: 100%;
+    }
+
+    .rating-driver-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .rating-ava {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 1.5px solid var(--border);
+    }
+
+    .rating-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .rating-sub { font-size: 13px; color: var(--text-secondary); }
+
+    .stars-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      direction: ltr;
+      margin-bottom: 22px;
+    }
+
+    .star-btn {
+      font-size: 38px;
+      color: var(--border);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .star-btn.lit { color: #ffc107; }
+    .star-btn:hover { transform: scale(1.1); }
+
+    .rating-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .chip {
+      padding: 8px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .chip.selected { background: var(--black); color: var(--white); border-color: var(--black); }
+    .chip:hover:not(.selected) { background: var(--surface); }
+
+    /* =====================
+       BOTTOM NAV BAR
+    ===================== */
+    .bottom-nav {
+      display: flex;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 10px 0 16px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'Cairo', sans-serif;
+      transition: all 0.15s ease;
+      padding: 4px;
+    }
+
+    .nav-btn .nav-ic { font-size: 22px; transition: all 0.15s ease; }
+    .nav-btn .nav-lbl { font-size: 10px; font-weight: 600; color: var(--text-hint); }
+    .nav-btn.active .nav-lbl { color: var(--black); font-weight: 800; }
+    .nav-btn.active .nav-ic { transform: scale(1.1); }
+
+    /* =====================
+       HISTORY SCREEN
+    ===================== */
+    .history-page {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    .back-circle:hover { background: var(--border); }
+    .page-title { font-size: 17px; font-weight: 800; }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 20px;
+    }
+
+    .trip-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .trip-row:last-child { border-bottom: none; }
+    .trip-row:hover { opacity: 0.75; }
+
+    .trip-icon-box {
+      width: 44px;
+      height: 44px;
+      background: var(--surface);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .trip-row-info { flex: 1; }
+    .trip-row-dest { font-size: 14px; font-weight: 700; }
+    .trip-row-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .trip-row-price { font-size: 15px; font-weight: 800; }
+
+    /* =====================
+       PROFILE SCREEN
+    ===================== */
+    .profile-page {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .profile-hero {
+      background: var(--black);
+      padding: 32px 24px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .profile-big-ava {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .profile-name-txt { font-size: 20px; font-weight: 800; color: var(--white); }
+    .profile-phone-txt { font-size: 13px; color: rgba(255,255,255,0.5); direction: ltr; }
+
+    .profile-body { padding: 20px; }
+
+    .profile-stats-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-v { font-size: 20px; font-weight: 900; }
+    .stat-l { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+    .menu-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-hint);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .menu-row:last-child { border-bottom: none; }
+    .menu-row:hover { opacity: 0.7; }
+
+    .menu-row-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .menu-row-text { flex: 1; font-size: 14px; font-weight: 600; }
+    .menu-row-arrow { color: var(--text-hint); font-size: 16px; transform: rotate(180deg); }
+
+    /* =====================
+       TOAST
+    ===================== */
+    .toast-wrap {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 90%;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--black);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      animation: toastIn 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: var(--shadow-lg);
+      pointer-events: all;
+    }
+
+    .toast.success { background: #1a1a1a; }
+    .toast.error { background: var(--red); }
+    .toast.info { background: #1a1a1a; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* =====================
+       VOICE CALL OVERLAY
+    ===================== */
+    .call-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #111111 0%, #000000 100%);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 60px 24px 48px;
+      color: var(--white);
+    }
+    .call-overlay.active { display: flex; }
+
+    .call-header-info {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .call-avatar-pulse {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin-bottom: 24px;
+    }
+
+    .call-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.2);
+      position: relative;
+      z-index: 2;
+    }
+
+    .call-ripple {
+      position: absolute;
+      inset: -15px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+      animation: ripple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+
+    .call-ripple:nth-child(2) { animation-delay: -0.5s; }
+
+    @keyframes ripple {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .call-name {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .call-status {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .call-security-badge {
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-size: 11px;
+      margin-top: 14px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .call-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      width: 100%;
+    }
+
+    .call-btn-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: var(--white);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .call-btn-circle:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+    .call-btn-circle.active-btn { background: var(--white); color: var(--black); }
+
+    .call-btn-end {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--red);
+      border: none;
+      color: var(--white);
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(229, 57, 53, 0.4);
+    }
+
+    .call-btn-end:hover { transform: scale(1.08); background: #d32f2f; }
+
+    /* =====================
+       PAYTABS PAYMENT GATEWAY
+    ===================== */
+    .paytabs-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .paytabs-bar:hover { border-color: var(--black); }
+
+    .paytabs-badge {
+      background: #003366;
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .paymodal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 160;
+      display: none;
+      align-items: flex-end;
+    }
+    .paymodal-overlay.active { display: flex; }
+
+    .paymodal-card {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .paymodal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .paymodal-title-box { display: flex; align-items: center; gap: 10px; }
+    .paymodal-title { font-size: 18px; font-weight: 900; }
+    .paymodal-sub { font-size: 11px; color: var(--text-secondary); }
+
+    .paymethod-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .paypill {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      background: var(--surface);
+    }
+
+    .paypill.selected {
+      border-color: #003366;
+      background: #f0f4f8;
+      color: #003366;
+    }
+
+    .card-num-input-wrap {
+      position: relative;
+    }
+
+    .card-brand-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+    }
+
+    /* =====================
+       IN-APP BANK 3D SECURE OTP MODAL
+    ===================== */
+    .otp-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      z-index: 180;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .otp-overlay.active { display: flex; }
+
+    .otp-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    }
+
+    .bank-logo-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #003366;
+      background: #f0f4f8;
+      padding: 8px 14px;
+      border-radius: 99px;
+    }
+
+    .otp-input-field {
+      width: 100%;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      text-align: center;
+      padding: 12px;
+      border: 2px solid #003366;
+      border-radius: 12px;
+      margin: 16px 0;
+      background: #f9fbfd;
+    }
+
+    /* Animations */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.35s cubic-bezier(0.4,0,0.2,1); }
+
+    /* =====================
+       CARD FORM - نموذج البطاقة
+    ===================== */
+    .card-preview {
+      background: linear-gradient(135deg, #003366 0%, #0057a8 50%, #00aaff 100%);
+      border-radius: 16px;
+      padding: 16px 18px;
+      color: #fff;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,51,102,0.35);
+      transition: all 0.4s;
+      min-height: 100px;
+    }
+    .card-preview.mada-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .card-preview.visa-card {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+    }
+    .card-preview.master-card {
+      background: linear-gradient(135deg, #b71c1c 0%, #c62828 50%, #e53935 100%);
+    }
+    .card-preview::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .card-preview::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -20px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .card-chip { font-size: 22px; margin-bottom: 8px; }
+    .card-num-display {
+      font-size: 16px; font-weight: 700; letter-spacing: 3px;
+      margin-bottom: 10px; font-family: 'Courier New', monospace;
+      dir: ltr; text-align: left;
+    }
+    .card-bottom-row {
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .card-name-display { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .card-exp-display  { font-size: 12px; font-weight: 700; }
+    .card-brand-logo {
+      position: absolute; top: 14px; right: 14px;
+      font-size: 28px; z-index: 2;
+    }
+
+    .card-form-fields { display: flex; flex-direction: column; gap: 10px; }
+    .card-field-group { display: flex; flex-direction: column; gap: 4px; }
+    .card-field-label {
+      font-size: 11px; font-weight: 800; color: #555;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .card-input-wrap { position: relative; }
+    .card-field-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #d0d8e4;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      background: #f8fafc;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+      outline: none;
+    }
+    .card-field-input:focus {
+      border-color: #003366;
+      box-shadow: 0 0 0 3px rgba(0,51,102,0.1);
+      background: #fff;
+    }
+    .card-field-input.valid { border-color: #22c55e; }
+    .card-field-input.error { border-color: #ef4444; }
+    .card-type-badge {
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 22px;
+    }
+  </style>
+
+  <!-- =============== SEARCH MODAL CSS =============== -->
+  <style>
+    /* نافذة البحث الكاملة */
+    .search-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--white);
+      display: flex; flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .search-modal.open { transform: translateY(0); }
+
+    .search-modal-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-back-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--surface); border: none;
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .search-modal-title {
+      font-size: 15px; font-weight: 700;
+    }
+
+    /* حقل البحث */
+    .search-modal-input-wrap {
+      padding: 12px 16px;
+      background: #f4f5f7;
+      margin: 12px 16px;
+      border-radius: 14px;
+      display: flex; align-items: center; gap: 10px;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .search-modal-input-wrap:focus-within {
+      border-color: #111;
+      background: #fff;
+    }
+    .search-modal-input-icon { font-size: 16px; flex-shrink: 0; }
+    .search-modal-input {
+      flex: 1; border: none; background: transparent;
+      font-size: 15px; font-weight: 600; outline: none;
+      font-family: inherit; color: var(--black);
+    }
+    .search-modal-input::placeholder { color: #aaa; font-weight: 400; }
+
+    /* قائمة نتائج الإكمال التلقائي */
+    .pac-container {
+      z-index: 100000 !important;
+      border-radius: 12px !important;
+      border: none !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+      margin-top: 4px !important;
+      overflow: hidden !important;
+      font-family: 'IBM Plex Sans Arabic', inherit !important;
+    }
+    .pac-item {
+      padding: 12px 20px !important;
+      font-size: 14px !important;
+      cursor: pointer !important;
+      border-top: 1px solid #f0f0f0 !important;
+      direction: rtl !important;
+    }
+    .pac-item:hover { background: #f5f5f5 !important; }
+    .pac-item-query { font-size: 14px !important; font-weight: 700 !important; }
+    .pac-matched { font-weight: 900 !important; color: #000 !important; }
+
+    /* اقتراحات سريعة */
+    .quick-suggestions { padding: 0 16px; overflow-y: auto; flex: 1; }
+    .quick-suggestion-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--surface);
+      cursor: pointer;
+    }
+    .quick-suggestion-item:active { opacity: 0.7; }
+    .qs-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--surface); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .qs-info { flex: 1; }
+    .qs-name { font-size: 14px; font-weight: 700; }
+    .qs-sub  { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* Google autocomplete dropdown override */
+    .pac-logo:after { display:none !important; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Toast Container -->
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- ============================================================
+       SEARCH MODAL — بحث الأماكن بـ Google Places
+  ============================================================ -->
+  <div class="search-modal" id="searchModal">
+    <!-- رأس النافذة -->
+    <div class="search-modal-header">
+      <button class="search-back-btn" onclick="closeSearchModal()">‹</button>
+      <div class="search-modal-title" id="searchModalTitle">اختر نقطة الانطلاق</div>
+    </div>
+
+    <!-- حقل البحث الحقيقي -->
+    <div class="search-modal-input-wrap">
+      <div class="search-modal-input-icon" id="searchModalIcon">📍</div>
+      <input
+        type="text"
+        class="search-modal-input"
+        id="placesSearchInput"
+        placeholder="ابحث عن موقع..."
+        autocomplete="off"
+        autofocus
+      />
+      <button onclick="document.getElementById('placesSearchInput').value=''; document.getElementById('placesSearchInput').focus();"
+        style="background:none;border:none;font-size:16px;color:#aaa;cursor:pointer;padding:4px;">✕</button>
+    </div>
+
+    <!-- اقتراحات سريعة -->
+    <div class="quick-suggestions" id="quickSuggestions">
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('المطار الملك خالد الدولي','✈️',24.9575,46.6988)">
+        <div class="qs-icon">✈️</div>
+        <div class="qs-info">
+          <div class="qs-name">مطار الملك خالد الدولي</div>
+          <div class="qs-sub">الرياض</div>
+        </div>
+      </div>
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('الرياض مول','🛒',24.7492,46.6202)">
+        <div class="qs-icon">🛒</div>
+        <div class="qs-info">
+          <div class="qs-name">الرياض مول</div>
+          <div class="qs-sub">شارع الملك فهد</div>
+        </div>
+      </div>
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('مستشفى الملك فيصل التخصصي','🏥',24.6964,46.6735)">
+        <div class="qs-icon">🏥</div>
+        <div class="qs-info">
+          <div class="qs-name">مستشفى الملك فيصل التخصصي</div>
+          <div class="qs-sub">الرياض</div>
+        </div>
+      </div>
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('جامعة الملك سعود','🎓',24.7270,46.6218)">
+        <div class="qs-icon">🎓</div>
+        <div class="qs-info">
+          <div class="qs-name">جامعة الملك سعود</div>
+          <div class="qs-sub">الدرعية، الرياض</div>
+        </div>
+      </div>
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('برج المملكة','🏙️',24.7116,46.6745)">
+        <div class="qs-icon">🏙️</div>
+        <div class="qs-info">
+          <div class="qs-name">برج المملكة</div>
+          <div class="qs-sub">وسط الرياض</div>
+        </div>
+      </div>
+      <div class="quick-suggestion-item" onclick="selectQuickSuggestion('حديقة السلام','🌳',24.7481,46.7214)">
+        <div class="qs-icon">🌳</div>
+        <div class="qs-info">
+          <div class="qs-name">حديقة السلام</div>
+          <div class="qs-sub">الرياض</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LOGIN SCREEN
+  ============================================================ -->
+  <div class="screen active" id="loginScreen">
+    <div class="login-top">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <img src="assets/logo-user.jpg" alt="شعار سند للركاب" style="width:48px;height:48px;border-radius:12px;object-fit:cover;">
+        <div class="login-logo">سند</div>
+      </div>
+      <div class="login-headline">انتقل إلى أي مكان<br>في أي وقت</div>
+      <div class="login-sub">احجز رحلتك بنقرة واحدة</div>
+    </div>
+
+    <div class="login-bottom animate-in">
+      <div class="input-group">
+        <label class="form-label">رقم الجوال</label>
+        <input type="tel" class="uber-input" id="phoneInput" placeholder="+966 5X XXX XXXX" dir="ltr">
+      </div>
+      <div class="input-group">
+        <label class="form-label">كلمة المرور</label>
+        <input type="password" class="uber-input" id="passInput" placeholder="••••••••">
+      </div>
+      <button class="btn-uber" onclick="doLogin()">متابعة ›</button>
+      <button class="btn-uber-outline" onclick="demoLogin()">🎮 تجربة تجريبية</button>
+      <div class="login-footer">
+        ليس لديك حساب؟ <a href="#">إنشاء حساب</a> &nbsp;|&nbsp;
+        <a href="index.html">الرئيسية</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN HOME SCREEN
+  ============================================================ -->
+  <div class="screen" id="homeScreen">
+
+    <!-- Map Area -->
+    <div class="map-wrapper">
+
+      <!-- Google Maps Real Map -->
+      <div id="passengerMap" style="width:100%;height:100%;position:absolute;inset:0;"></div>
+
+      <!-- Hidden SVG stubs so old JS doesn't crash (no-op) -->
+      <svg style="display:none">
+        <g id="pickupPin"></g>
+        <g id="dropoffPin"></g>
+        <g id="myLocDot"></g>
+        <g id="driverCar"></g>
+        <path id="routeLine"></path>
+      </svg>
+
+
+      <!-- Map Header -->
+      <div class="map-header">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;">
+          <img src="assets/logo-user.jpg" alt="سند" style="width:34px;height:34px;border-radius:8px;object-fit:cover;">
+          <div class="map-logo">سند</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="icon-btn" onclick="showProfile()" title="الملف الشخصي">👤</button>
+        </div>
+      </div>
+
+      <!-- Map Controls -->
+      <div class="map-fab-group">
+        <button class="map-fab" onclick="centerMap()">⊕</button>
+      </div>
+
+      <!-- SEARCHING OVERLAY -->
+      <div class="overlay-dark" id="searchingOverlay">
+        <div class="search-card animate-in">
+          <div class="search-header">
+            <div class="search-spinner"></div>
+            <div>
+              <div class="search-title">جاري البحث عن سائق <span class="searching-dots"><span></span><span></span><span></span></span></div>
+              <div class="search-sub">نبحث عن أقرب سائق إليك</div>
+            </div>
+          </div>
+          <div class="nearby-count">
+            <div class="nearby-icon">🚗</div>
+            <div class="nearby-text">سائقون قريبون منك</div>
+            <div class="nearby-num">٣</div>
+          </div>
+          <button class="btn-cancel-round" onclick="cancelSearch()">إلغاء الطلب</button>
+        </div>
+      </div>
+
+      <!-- ACTIVE TRIP OVERLAY -->
+      <div class="overlay-dark" id="tripOverlay">
+        <div class="trip-sheet animate-in">
+
+          <div class="driver-card-row">
+            <div class="driver-ava">👨‍✈️</div>
+            <div>
+              <div class="driver-name-txt">محمد السعيد</div>
+              <div class="driver-plate-txt">أ ب ج ٢٣٤٥</div>
+            </div>
+            <div class="driver-rating-txt">⭐ ٤.٩</div>
+          </div>
+
+          <div class="eta-bar">
+            <div class="eta-icon">🚗</div>
+            <div class="eta-text" id="tripStatusMsg">السائق في طريقه إليك</div>
+            <div class="eta-time" id="etaNum">٥ د</div>
+          </div>
+
+          <div class="trip-progress-bar">
+            <div class="trip-progress-fill" id="tripFill"></div>
+          </div>
+
+          <div class="trip-actions-row">
+            <button class="trip-action-btn" onclick="callDriver()">📞 اتصال</button>
+            <button class="trip-action-btn" onclick="msgDriver()">💬 رسالة</button>
+            <button class="trip-action-btn" onclick="shareTripLive()" style="background:#276ef1;color:#fff;">📤 مشاركة</button>
+          </div>
+
+          <!-- SOS + SPLIT FARE -->
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button onclick="openSplitFare()" style="flex:1;padding:10px;background:#f0f4ff;border:1px solid #ccd8ff;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;color:#276ef1;">💰 تقسيم الأجرة</button>
+            <button onclick="openSOS()" style="flex:1;padding:10px;background:#fff0f0;border:2px solid #e74c3c;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;color:#e74c3c;animation:sosPulse 2s infinite;">🆘 طوارئ SOS</button>
+          </div>
+
+          <button class="btn-cancel-trip" onclick="cancelTrip()" style="margin-top:10px;">إلغاء الرحلة</button>
+        </div>
+      </div>
+
+      <!-- RATING OVERLAY -->
+      <div class="rating-overlay" id="ratingOverlay">
+        <div class="rating-card animate-in">
+          <div class="rating-driver-row">
+            <div class="rating-ava">👨‍✈️</div>
+            <div>
+              <div class="rating-title">وصلت بأمان! 🎉</div>
+              <div class="rating-sub">كيف كانت رحلتك مع محمد؟</div>
+            </div>
+          </div>
+
+          <div class="stars-row" id="starsRow">
+            <button class="star-btn" data-v="5" onclick="rateStar(5)">★</button>
+            <button class="star-btn" data-v="4" onclick="rateStar(4)">★</button>
+            <button class="star-btn" data-v="3" onclick="rateStar(3)">★</button>
+            <button class="star-btn" data-v="2" onclick="rateStar(2)">★</button>
+            <button class="star-btn" data-v="1" onclick="rateStar(1)">★</button>
+          </div>
+
+          <div class="rating-chips" id="ratingChips">
+            <div class="chip" onclick="toggleChip(this)">سائق ممتاز</div>
+            <div class="chip" onclick="toggleChip(this)">القيادة كانت ناعمة</div>
+            <div class="chip" onclick="toggleChip(this)">السيارة نظيفة</div>
+            <div class="chip" onclick="toggleChip(this)">وصل بسرعة</div>
+            <div class="chip" onclick="toggleChip(this)">متعاون</div>
+          </div>
+
+          <button class="btn-uber" onclick="submitRating()">إرسال التقييم</button>
+        </div>
+      <!-- VOICE CALL OVERLAY -->
+      <div class="call-overlay" id="voiceCallOverlay">
+        <div class="call-header-info animate-in">
+          <div class="call-avatar-pulse">
+            <div class="call-ripple"></div>
+            <div class="call-ripple"></div>
+            <img src="assets/logo-driver.jpg" class="call-avatar-img" id="callTargetImg" alt="صورة السائق">
+          </div>
+          <div class="call-name" id="callTargetName">الكابتن محمد السعيد</div>
+          <div class="call-status" id="callStatusText">📡 جاري الاتصال المشفر...</div>
+          <div class="call-security-badge">🔒 مكالمة آمنة ومجانية عبر الإنترنت</div>
+        </div>
+
+        <div class="call-controls-row">
+          <button class="call-btn-circle" id="btnMute" onclick="toggleMute()" title="كتم الصوت">🎙️</button>
+          <button class="call-btn-end" onclick="endVoiceCall()" title="إنهاء المكالمة">📞</button>
+          <button class="call-btn-circle" id="btnSpeaker" onclick="toggleSpeaker()" title="المكبر">🔊</button>
+        </div>
+      </div>
+
+    </div>
+    </div> <!-- End map-wrapper -->
+
+    <!-- Bottom Sheet -->
+    <div class="bottom-sheet" id="mainBottomSheet">
+      <div class="sheet-handle-wrap"><div class="sheet-handle"></div></div>
+      <div class="sheet-inner">
+
+        <!-- Where to inputs -->
+        <div class="where-to-bar" onclick="setPickup()" id="pickupBar">
+          <div class="where-icon pickup"></div>
+          <div class="where-text" id="pickupTxt">موقعك الحالي</div>
+        </div>
+        <div style="display:flex;padding-right:8px;margin-bottom:2px;">
+          <div class="location-dots">
+            <div class="loc-dot"></div>
+            <div class="loc-dot"></div>
+            <div class="loc-dot"></div>
+          </div>
+        </div>
+        <div class="where-to-bar" onclick="setDropoff()" id="dropoffBar" style="margin-bottom:16px;">
+          <div class="where-icon dropoff"></div>
+          <div class="where-text empty" id="dropoffTxt">إلى أين؟</div>
+        </div>
+
+        <!-- Quick places -->
+        <div class="quick-places">
+          <div class="quick-place" onclick="setQuickPlace('🏠','المنزل')">🏠 المنزل</div>
+          <div class="quick-place" onclick="setQuickPlace('💼','العمل')">💼 العمل</div>
+          <div class="quick-place" onclick="setQuickPlace('🏥','المستشفى')">🏥 مستشفى</div>
+          <div class="quick-place" onclick="setQuickPlace('✈️','المطار')">✈️ المطار</div>
+          <div class="quick-place" onclick="setQuickPlace('🛒','المول')">🛒 المول</div>
+        </div>
+
+        <!-- Ride types -->
+        <div class="ride-types-scroll">
+          <div class="ride-card selected" id="rideEco" onclick="selectRide('eco',this)">
+            <div class="ride-card-icon">🚗</div>
+            <div class="ride-card-name">سند X</div>
+            <div class="ride-card-time">٣ د ٪</div>
+          </div>
+          <div class="ride-card" id="rideComfort" onclick="selectRide('comfort',this)">
+            <div class="ride-card-icon">🚙</div>
+            <div class="ride-card-name">Comfort</div>
+            <div class="ride-card-time">٦ د ٪</div>
+          </div>
+          <div class="ride-card" id="rideXL" onclick="selectRide('xl',this)">
+            <div class="ride-card-icon">🚐</div>
+            <div class="ride-card-name">XL</div>
+            <div class="ride-card-time">٨ د ٪</div>
+          </div>
+          <div class="ride-card" id="ridePremium" onclick="selectRide('premium',this)">
+            <div class="ride-card-icon">🏎️</div>
+            <div class="ride-card-name">Black</div>
+            <div class="ride-card-time">١٢ د ٪</div>
+          </div>
+        </div>
+
+        <!-- PayTabs Payment Bar -->
+        <div class="paytabs-bar" onclick="openPaytabsModal()">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="paytabs-badge">PayTabs</div>
+            <div>
+              <div style="font-size:13px;font-weight:800;" id="paySelectedMethod">💳 مدى / Apple Pay</div>
+              <div style="font-size:10px;color:var(--text-secondary);">بوابة الدفع الآمنة المعتمدة SAMA 🛡️</div>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#003366;">تغيير ›</div>
+        </div>
+
+        <!-- PROMO CODE -->
+        <div id="promoRow" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="position:relative;flex:1;">
+            <input id="promoInput" type="text" placeholder="🎁 أدخل رمزاً ترويجياً" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;outline:none;transition:border-color .2s;" dir="ltr" oninput="this.style.borderColor=this.value?'#276ef1':'var(--border)'">
+          </div>
+          <button onclick="applyPromo()" style="padding:9px 14px;background:#000;color:#fff;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:12px;font-weight:800;cursor:pointer;">تطبيق</button>
+        </div>
+        <div id="promoMsg" style="display:none;font-size:11px;font-weight:700;text-align:center;padding:4px 10px;border-radius:8px;margin-bottom:8px;"></div>
+
+        <!-- SCHEDULE ROW -->
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="toggleSchedule()" id="scheduleBtn" style="flex:1;padding:9px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;cursor:pointer;color:var(--text-secondary);transition:all .2s;">
+            ⏰ الآن
+          </button>
+          <button onclick="openSchedulePicker()" id="scheduleTimeBtn" style="flex:2;padding:9px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;cursor:pointer;color:var(--text-secondary);display:none;">
+            📅 اختر الوقت
+          </button>
+        </div>
+
+        <!-- Request -->
+        <div class="request-section">
+          <div class="fare-estimate">
+            <div class="fare-value" id="fareVal">٢٢</div>
+            <div class="fare-label">ر.س</div>
+            <div id="surgeTag" style="display:none;font-size:9px;font-weight:800;background:#ff6b35;color:#fff;padding:2px 6px;border-radius:4px;margin-top:2px;">⚡ ذروة</div>
+          </div>
+          <div style="flex:1;">
+            <button class="btn-request" id="requestBtn" onclick="requestRide()">
+              💳 احجز وادفع سند X
+            </button>
+            <div style="font-size:10px;text-align:center;color:var(--text-secondary);margin-top:4px;" id="fareBreakdown">الأجرة تشمل: الأساسي + ٢.٥ ر.س/كم</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAYTABS CHECKOUT MODAL -->
+    <div class="paymodal-overlay" id="paytabsModal">
+      <div class="paymodal-card animate-in">
+        <div class="paymodal-header">
+          <div class="paymodal-title-box">
+            <div class="paytabs-badge" style="font-size:12px;padding:4px 10px;">PayTabs</div>
+            <div>
+              <div class="paymodal-title">الدفع عبر PayTabs</div>
+              <div class="paymodal-sub" id="paytabsStatusLabel">مؤسسة سند - متصل ومربوط 🟢</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="togglePaytabsConfig()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:14px;cursor:pointer;">⚙️ المفاتيح</button>
+            <button onclick="closePaytabsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-secondary);">✕</button>
+          </div>
+        </div>
+
+        <!-- Hidden Config Form for Real API Integration -->
+        <div id="paytabsConfigBox" style="display:none;background:#f9fbfd;padding:12px;border-radius:12px;border:1px solid #e0e6ed;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:800;color:#003366;margin-bottom:8px;">إعدادات الربط المباشر (PayTabs)</div>
+          
+          <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Profile ID (رقم البروفايل)</label>
+          <input type="text" class="uber-input" id="payProfileId" placeholder="مثال: 118240" dir="ltr" value="118240" style="margin-bottom:10px;font-size:12px;padding:8px;">
+          
+          <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Server Key (مفتاح الخادم)</label>
+          <input type="password" class="uber-input" id="payServerKey" placeholder="S9JNT...-..." dir="ltr" value="S9JNT...-..." style="margin-bottom:10px;font-size:12px;padding:8px;">
+          
+          <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Client Key (مفتاح العميل)</label>
+          <input type="text" class="uber-input" id="payClientKey" placeholder="CHKM...-..." dir="ltr" value="CHKM...-..." readonly style="background:#f0f4f8;font-size:11px;margin-bottom:12px;">
+
+          <button class="btn-uber" style="background:#003366;padding:8px;font-size:13px;" onclick="savePaytabsKeys()">💾 حفظ المطابقة مع PayTabs</button>
+        </div>
+
+        <!-- Methods -->
+        <div class="paymethod-pills">
+          <div class="paypill selected" id="pillMada" onclick="selectPaypill('mada')">مدى<br>Mada</div>
+          <div class="paypill" id="pillApple" onclick="selectPaypill('apple')">Apple<br>Pay</div>
+          <div class="paypill" id="pillCard" onclick="selectPaypill('card')">فيزا /<br>ماستر</div>
+          <div class="paypill" id="pillCash" onclick="selectPaypill('cash')">دفع<br>نقدي</div>
+        </div>
+
+
+        <!-- Form Container - PayTabs Managed Form (بيانات البطاقة تذهب مباشرةً لـ PayTabs) -->
+        <div id="payFormBox">
+          <!-- بطاقة معروضة حية -->
+          <div class="card-preview" id="cardPreview">
+            <div class="card-chip">💳</div>
+            <div class="card-num-display" id="cardNumDisplay">•••• •••• •••• ••••</div>
+            <div class="card-bottom-row">
+              <div>
+                <div style="font-size:9px;opacity:0.7;">CARDHOLDER</div>
+                <div class="card-name-display" id="cardNameDisplay">الاسم على البطاقة</div>
+              </div>
+              <div style="text-align:left;">
+                <div style="font-size:9px;opacity:0.7;">EXPIRES</div>
+                <div class="card-exp-display" id="cardExpDisplay">MM/YY</div>
+              </div>
+            </div>
+            <div class="card-brand-logo" id="cardBrandLogo">🏦</div>
+          </div>
+
+          <!-- PayTabs Managed Form — حقول آمنة -->
+          <form id="pt-payment-form">
+            <input type="hidden" name="payment_token" id="pt_token">
+
+            <div class="card-form-fields">
+              <!-- رقم البطاقة — PayTabs يُدير هذا الحقل -->
+              <div class="card-field-group">
+                <label class="card-field-label">رقم البطاقة</label>
+                <div class="card-input-wrap">
+                  <input type="tel" data-paylib="number" id="directCardNum"
+                    class="card-field-input" placeholder="0000 0000 0000 0000"
+                    maxlength="19" dir="ltr" autocomplete="cc-number"
+                    oninput="formatCardNumber(this)">
+                  <span id="cardTypeIcon" class="card-type-badge"></span>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;">
+                <!-- الشهر -->
+                <div class="card-field-group" style="flex:1;">
+                  <label class="card-field-label">الشهر</label>
+                  <input type="tel" data-paylib="expmonth" id="directExpMonth"
+                    class="card-field-input" placeholder="MM" maxlength="2"
+                    dir="ltr" autocomplete="cc-exp-month">
+                </div>
+                <!-- السنة -->
+                <div class="card-field-group" style="flex:1;">
+                  <label class="card-field-label">السنة</label>
+                  <input type="tel" data-paylib="expyear" id="directExpYear"
+                    class="card-field-input" placeholder="YY" maxlength="2"
+                    dir="ltr" autocomplete="cc-exp-year"
+                    oninput="document.getElementById('cardExpDisplay').textContent = (document.getElementById('directExpMonth').value||'MM') + '/' + this.value">
+                </div>
+                <!-- CVV -->
+                <div class="card-field-group" style="flex:1;">
+                  <label class="card-field-label">CVV</label>
+                  <input type="tel" data-paylib="cvv" id="directCvv"
+                    class="card-field-input" placeholder="•••" maxlength="4"
+                    dir="ltr" autocomplete="cc-csc">
+                </div>
+              </div>
+
+              <!-- الاسم (عادي، لا يُرسل لـ PayTabs) -->
+              <div class="card-field-group">
+                <label class="card-field-label">الاسم على البطاقة</label>
+                <input type="text" id="directHolder" class="card-field-input"
+                  placeholder="كما هو مكتوب على البطاقة"
+                  autocomplete="cc-name"
+                  oninput="document.getElementById('cardNameDisplay').textContent = this.value || 'الاسم على البطاقة'">
+              </div>
+            </div>
+          </form>
+
+          <!-- شارة الأمان -->
+          <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#717171;margin-top:8px;justify-content:center;">
+            <span>🔒</span>
+            <span>محمي بـ PayTabs Managed Form | PCI-DSS | SAMA معتمد</span>
+          </div>
+        </div>
+
+        <!-- زر Apple Pay منفصل (يظهر فقط مع Apple Pay) -->
+        <div id="applePayBox" style="display:none;">
+          <div style="background:#f9fbfd;border-radius:16px;padding:20px;text-align:center;border:1px solid #e0e6ed;">
+            <div style="font-size:40px;margin-bottom:8px;">🍎</div>
+            <div style="font-size:15px;font-weight:800;margin-bottom:4px;">Apple Pay</div>
+            <div style="font-size:12px;color:#717171;">ادفع ببصمة الوجه أو البصمة</div>
+          </div>
+        </div>
+
+        <!-- رسالة الدفع النقدي (يظهر فقط مع كاش) -->
+        <div id="cashBox" style="display:none;">
+          <div style="background:#f0fff0;border-radius:16px;padding:20px;text-align:center;border:1px solid #a8dab5;">
+            <div style="font-size:40px;margin-bottom:8px;">💵</div>
+            <div style="font-size:15px;font-weight:800;margin-bottom:4px;color:#137333;">دفع نقدي</div>
+            <div style="font-size:12px;color:#717171;">سيتم الدفع للسائق مباشرة عند الوصول</div>
+          </div>
+        </div>
+
+        <!-- Pay Action Button - دائماً ظاهر -->
+        <button class="btn-uber" id="mainPayBtn" style="background:#003366;margin-top:14px;" onclick="processPaytabsPayment()">
+          <span id="payBtnText">🛡️ تأكيد ودفع <span id="payAmountBtn">٢٢</span> ر.س عبر PayTabs</span>
+        </button>
+      </div> <!-- End paymodal-card -->
+    </div> <!-- End paymodal-overlay -->
+
+    <!-- IN-APP BANK 3D SECURE OTP MODAL (DIRECT IN-APP CHECKOUT) -->
+    <div class="otp-overlay" id="paytabsOtpOverlay">
+      <div class="otp-card animate-in">
+        <div class="bank-logo-header">
+          <span>🏦</span>
+          <span>توثيق مدى / البنك الأهلي السعودي</span>
+        </div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px;">رمز الأمان المؤقت (OTP)</div>
+        <div style="font-size:12px;color:var(--text-secondary);">تم إرسال رمز التوثيق إلى جوالك المسجل ****92</div>
+
+        <input type="text" class="otp-input-field" id="otpCodeInput" placeholder="• • • • • •" maxlength="6" dir="ltr" value="849201">
+
+        <div style="font-size:11px;color:#003366;font-weight:700;margin-bottom:16px;">
+          المبلغ: <span id="otpFareAmt">٢٢</span> ر.س | التاجر: مؤسسة سند (Profile 118240)
+        </div>
+
+        <button class="btn-uber" style="background:#003366;margin-bottom:8px;" onclick="confirmInAppOtpPayment()">
+          ✅ توثيق واكتمال الدفع المباشر
+        </button>
+        <button class="btn-uber-outline" style="border:none;" onclick="cancelOtpPayment()">إلغاء العملية</button>
+      </div>
+    </div>
+
+    <!-- شاشة انتظار الدفع (تفتح PayTabs في نافذة منفصلة) -->
+    <div class="paymodal-overlay" id="payiframeOverlay" style="background:rgba(0,0,5,0.97);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+
+      <!-- شعار PayTabs -->
+      <div style="background:#003366;border-radius:16px;padding:16px 24px;margin-bottom:20px;text-align:center;width:100%;max-width:340px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="background:#fff;color:#003366;font-weight:900;font-size:12px;padding:4px 10px;border-radius:6px;">PayTabs</div>
+          <div style="color:#fff;font-size:13px;font-weight:800;">🔐 التحقق الأمني</div>
+          <button onclick="closePaymentIframe()" style="background:rgba(255,100,100,0.3);border:1px solid rgba(255,100,100,0.5);color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:12px;">✕</button>
+        </div>
+      </div>
+
+      <!-- أيقونة الانتظار -->
+      <div style="width:100%;max-width:340px;background:rgba(255,255,255,0.05);border-radius:20px;padding:28px 24px;text-align:center;border:1px solid rgba(255,255,255,0.1);">
+        <!-- مؤشر دوار -->
+        <div id="paySpinner" style="width:64px;height:64px;border:4px solid rgba(255,255,255,0.1);border-top-color:#22c55e;border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite;"></div>
+        <div style="color:#fff;font-size:18px;font-weight:900;margin-bottom:8px;">في انتظار تأكيد البنك</div>
+        <div id="payWindowStatus" style="color:#a8c4ff;font-size:13px;line-height:1.6;margin-bottom:20px;">
+          تم فتح صفحة الدفع في نافذة جديدة 🪟<br>
+          أكمل عملية الدفع هناك، ثم عُد هنا
+        </div>
+
+        <!-- معلومات المعاملة -->
+        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:right;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">رقم المعاملة</div>
+          <div id="payTranRefDisplay" style="font-size:12px;color:#a8c4ff;font-family:monospace;"></div>
+          <div style="font-size:11px;color:#888;margin-top:6px;">المبلغ</div>
+          <div id="payAmountDisplay" style="font-size:16px;color:#22c55e;font-weight:900;"></div>
+        </div>
+
+        <!-- زر إعادة الفتح -->
+        <button onclick="reopenPayWindow()" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+          🪟 إعادة فتح صفحة الدفع
+        </button>
+      </div>
+
+      <!-- زر التأكيد -->
+      <div style="width:100%;max-width:340px;margin-top:16px;">
+        <button id="threeDSConfirmBtn" onclick="checkPaymentStatus()" style="
+          width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);
+          border:none;color:#fff;font-size:16px;font-weight:900;
+          padding:16px;border-radius:14px;cursor:pointer;
+          box-shadow:0 4px 20px rgba(34,197,94,0.4);
+          display:flex;align-items:center;justify-content:center;gap:8px;
+        ">
+          <span id="threeDSBtnText">✅ أتممت الدفع — تأكيد</span>
+        </button>
+        <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px;">
+          🔒 SSL-256bit | SAMA معتمد | PayTabs KSA
+        </div>
+      </div>
+
+    </div>
+    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="homeNav">
+      <button class="nav-btn active" id="navHome" onclick="gotoHome()">
+        <span class="nav-ic">🗺️</span>
+        <span class="nav-lbl">الرئيسية</span>
+      </button>
+      <button class="nav-btn" id="navTrips" onclick="gotoHistory()">
+        <span class="nav-ic">🕐</span>
+        <span class="nav-lbl">الرحلات</span>
+      </button>
+      <button class="nav-btn" id="navOffers">
+        <span class="nav-ic">🎁</span>
+        <span class="nav-lbl">العروض</span>
+      </button>
+      <button class="nav-btn" id="navMe" onclick="gotoProfile()">
+        <span class="nav-ic">👤</span>
+        <span class="nav-lbl">حسابي</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       HISTORY SCREEN
+  ============================================================ -->
+  <div class="screen" id="historyScreen">
+    <div class="history-page">
+      <div class="page-header">
+        <button class="back-circle" onclick="gotoHome()">‹</button>
+        <div class="page-title">رحلاتك السابقة</div>
+      </div>
+      <div class="history-list">
+        <div class="trip-row">
+          <div class="trip-icon-box">🚗</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">المطار الدولي</div>
+            <div class="trip-row-date">اليوم، ٣:١٥ م • سند X</div>
+          </div>
+          <div class="trip-row-price">٢٣ ر.س</div>
+        </div>
+        <div class="trip-row">
+          <div class="trip-icon-box">🚙</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">مركز التسوق العالمي</div>
+            <div class="trip-row-date">أمس، ١٠:٤٠ ص • Comfort</div>
+          </div>
+          <div class="trip-row-price">٣٤ ر.س</div>
+        </div>
+        <div class="trip-row">
+          <div class="trip-icon-box">🚗</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">مستشفى الملك فهد</div>
+            <div class="trip-row-date">٢٨ يوليو • سند X</div>
+          </div>
+          <div class="trip-row-price">١٨ ر.س</div>
+        </div>
+        <div class="trip-row">
+          <div class="trip-icon-box">🏎️</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">فندق هيلتون الرياض</div>
+            <div class="trip-row-date">٢٧ يوليو • Black</div>
+          </div>
+          <div class="trip-row-price">٧٥ ر.س</div>
+        </div>
+        <div class="trip-row">
+          <div class="trip-icon-box">🚗</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">الجامعة الملكية</div>
+            <div class="trip-row-date">٢٦ يوليو • سند X</div>
+          </div>
+          <div class="trip-row-price">١٢ ر.س</div>
+        </div>
+        <div class="trip-row">
+          <div class="trip-icon-box">🚐</div>
+          <div class="trip-row-info">
+            <div class="trip-row-dest">المنطقة الصناعية</div>
+            <div class="trip-row-date">٢٤ يوليو • XL</div>
+          </div>
+          <div class="trip-row-price">٤٩ ر.س</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PROFILE SCREEN
+  ============================================================ -->
+  <div class="screen" id="profileScreen">
+    <div class="profile-page">
+      <div class="profile-hero">
+        <div class="profile-big-ava">👤</div>
+        <div>
+          <div class="profile-name-txt">إبراهيم العمري</div>
+          <div class="profile-phone-txt">+966 50 123 4567</div>
+        </div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-stats-row">
+          <div class="stat-box">
+            <div class="stat-v">٤٧</div>
+            <div class="stat-l">رحلة</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-v">⭐ ٤.٨</div>
+            <div class="stat-l">تقييمك</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-v">٩٨٥</div>
+            <div class="stat-l">ر.س مُنفق</div>
+          </div>
+        </div>
+
+        <div class="menu-section-title">الحساب</div>
+        <div class="menu-row"><div class="menu-row-icon">💳</div><div class="menu-row-text">طرق الدفع</div><div class="menu-row-arrow">›</div></div>
+        <div class="menu-row"><div class="menu-row-icon">🎁</div><div class="menu-row-text">الرموز الترويجية</div><div class="menu-row-arrow">›</div></div>
+        <div class="menu-row"><div class="menu-row-icon">📍</div><div class="menu-row-text">عناوين محفوظة</div><div class="menu-row-arrow">›</div></div>
+
+        <div class="menu-section-title">الإعدادات</div>
+        <div class="menu-row"><div class="menu-row-icon">🔔</div><div class="menu-row-text">الإشعارات</div><div class="menu-row-arrow">›</div></div>
+        <div class="menu-row"><div class="menu-row-icon">🛡️</div><div class="menu-row-text">الأمان والخصوصية</div><div class="menu-row-arrow">›</div></div>
+        <div class="menu-row"><div class="menu-row-icon">📞</div><div class="menu-row-text">الدعم الفني</div><div class="menu-row-arrow">›</div></div>
+
+        <div class="menu-section-title"></div>
+        <div class="menu-row" onclick="doLogout()"><div class="menu-row-icon">🚪</div><div class="menu-row-text" style="color:var(--red)">تسجيل الخروج</div><div class="menu-row-arrow" style="color:var(--red)">›</div></div>
+
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==================================================
+// SAND TAXI - Passenger App Logic (Uber Style)
+// ==================================================
+
+let state = 'idle';
+let pickup = true, dropoff = false;
+let selectedRideType = 'eco';
+let tripRating = 0;
+let tripProgress = 0;
+let progressTimer = null;
+
+// === أسعار الرحلات — اللحظية من Firebase ===
+let _adminPricing = { eco: 22, comfort: 38, xl: 45, premium: 75, perKm: 2.5, perMin: 0.5, minFare: 12, surge: 1.0 };
+if (window.snadDB) {
+  window.snadDB.ref('config/pricing').on('value', function(snapshot) {
+    const data = snapshot.val();
+    if (data && data.pricingRules) {
+      _adminPricing.eco = data.pricingRules.eco.base || 22;
+      _adminPricing.comfort = data.pricingRules.comfort.base || 38;
+      _adminPricing.xl = data.pricingRules.xl.base || 45;
+      _adminPricing.premium = data.pricingRules.premium.base || 75;
+      _adminPricing.perKm = data.pricingRules.eco.km || 2.5;
+      _adminPricing.minFare = data.pricingRules.eco.min || 12;
+      _adminPricing.surge = data.surgeMultiplier || 1.0;
+      console.log('✅ تم تحديث الأسعار اللحظية من السيرفر');
+    }
+  });
+}
+const fareMap = _adminPricing; // مرجع حي
+const rideNames = { eco: 'سند X', comfort: 'Comfort', xl: 'XL', premium: 'Black' };
+
+const destinations = [
+  'المطار الدولي', 'مركز التسوق العالمي', 'مستشفى الملك فهد',
+  'فندق هيلتون الرياض', 'الجامعة الملكية', 'برج المملكة',
+  'حي المروج', 'حي النزهة', 'المنطقة الصناعية'
+];
+
+// ---- LOGIN ----
+function doLogin() {
+  const p = document.getElementById('phoneInput').value;
+  const pw = document.getElementById('passInput').value;
+  if (!p || !pw) { toast('error','⚠️ أدخل رقم الجوال وكلمة المرور'); return; }
+  toast('success','✅ مرحباً بك!');
+  // حدث GA4: تسجيل الدخول
+  if (window.gtag) gtag('event', 'login', { method: 'phone', user_phone: p.substring(0,6)+'***' });
+  setTimeout(enterHome, 800);
+}
+
+function demoLogin() {
+  toast('info','🎮 وضع التجربة');
+  setTimeout(enterHome, 600);
+}
+
+function enterHome() {
+  switchScreen('homeScreen');
+}
+
+// ---- LOCATION ----
+// ---- نوع البحث الحالي (pickup أو dropoff) ----
+let _searchTarget = 'dropoff'; // pickup أو dropoff
+let _placesAC = null; // Google Places Autocomplete instance
+
+// ---- فتح نافذة البحث ----
+function openSearchModal(target) {
+  _searchTarget = target;
+  const modal = document.getElementById('searchModal');
+  const title = document.getElementById('searchModalTitle');
+  const icon  = document.getElementById('searchModalIcon');
+  if (target === 'pickup') {
+    title.textContent = 'اختر نقطة الانطلاق';
+    icon.textContent  = '🟢';
+  } else {
+    title.textContent = 'إلى أين؟';
+    icon.textContent  = '📍';
+  }
+  modal.classList.add('open');
+  const inp = document.getElementById('placesSearchInput');
+  inp.value = '';
+  setTimeout(() => inp.focus(), 300);
+
+  // إعداد Places Autocomplete إذا لم يكن جاهزاً
+  if (!_placesAC && window.google && window.google.maps) {
+    _placesAC = new google.maps.places.Autocomplete(inp, {
+      componentRestrictions: { country: 'SA' },
+      fields: ['geometry', 'name', 'formatted_address']
+    });
+    _placesAC.addListener('place_changed', () => {
+      const place = _placesAC.getPlace();
+      if (!place || !place.geometry) return;
+      const latLng = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng()
+      };
+      const name = place.name || place.formatted_address || inp.value;
+      applyLocationSelection(name, latLng);
+    });
+  }
+}
+
+// ---- إغلاق نافذة البحث ----
+function closeSearchModal() {
+  document.getElementById('searchModal').classList.remove('open');
+}
+
+// ---- تطبيق اختيار الموقع ----
+function applyLocationSelection(name, latLng) {
+  closeSearchModal();
+  if (_searchTarget === 'pickup') {
+    pickup = true;
+    document.getElementById('pickupTxt').textContent = name;
+    document.getElementById('pickupTxt').classList.remove('empty');
+    if (latLng && window.setPassengerPickup) setPassengerPickup(latLng, name);
+  } else {
+    dropoff = true;
+    document.getElementById('dropoffTxt').textContent = name;
+    document.getElementById('dropoffTxt').classList.remove('empty');
+    if (latLng && window.setPassengerDropoff) setPassengerDropoff(latLng, name);
+    toast('info', '📍 تم تحديد الوجهة: ' + name);
+  }
+}
+
+// ---- اختيار سريع من الاقتراحات ----
+function selectQuickSuggestion(name, icon, lat, lng) {
+  applyLocationSelection(icon + ' ' + name, { lat, lng });
+}
+
+// ---- قديم: setPickup يفتح نافذة البحث ----
+function setPickup() {
+  openSearchModal('pickup');
+}
+
+// ---- قديم: setDropoff يفتح نافذة البحث ----
+function setDropoff() {
+  openSearchModal('dropoff');
+}
+
+// ---- اختيار سريع من الأزرار القديمة ----
+function setQuickPlace(icon, name) {
+  openSearchModal('dropoff');
+}
+
+// ---- RIDE TYPE ----
+function selectRide(type, el) {
+  document.querySelectorAll('.ride-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRideType = type;
+  document.getElementById('fareVal').textContent = toAr(fareMap[type]);
+  document.getElementById('requestBtn').textContent = '💳 احجز وادفع ' + rideNames[type];
+}
+
+// ---- REQUEST ----
+function requestRide() {
+  // حدث GA4: طلب رحلة
+  if (window.gtag) gtag('event', 'begin_checkout', {
+    currency: 'SAR',
+    value: parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22,
+    items: [{ item_name: selectedRideType || 'eco', item_category: 'سيارة' }]
+  });
+  if (!dropoff) { setDropoff(); }
+  openPaytabsModal();
+}
+
+// يستدعى بعد اكتمال الدفع فعلاً
+function startRideAfterPayment() {
+  // حدث GA4: إتمام الدفع
+  var fare = parseFloat(document.getElementById('fareVal') ? document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'') : 22) || 22;
+  if (window.gtag) gtag('event', 'purchase', {
+    transaction_id: 'SNAD-' + Date.now(),
+    currency: 'SAR',
+    value: fare,
+    coupon: appliedPromo || '',
+    items: [{ item_name: selectedRideType || 'eco', item_category: 'رحلة سند', price: fare, quantity: 1 }]
+  });
+  closePaytabsModal();
+  startSearch();
+}
+
+let currentTripId = null;
+
+function startSearch() {
+  state = 'searching';
+  document.getElementById('searchingOverlay').classList.add('active');
+  document.getElementById('mainBottomSheet').style.display = 'none';
+
+  if (window.snadDB) {
+    currentTripId = 'TRIP_' + Date.now();
+    var fare = parseFloat(document.getElementById('fareVal') ? document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'') : 22) || 22;
+    var tripRef = window.snadDB.ref('trips/' + currentTripId);
+    
+    // إنشاء الطلب في قاعدة البيانات
+    tripRef.set({
+      passenger: 'راكب تجريبي',
+      type: selectedRideType || 'eco',
+      fare: fare,
+      status: 'searching',
+      createdAt: Date.now()
+    });
+
+    // مراقبة حالة الطلب
+    tripRef.on('value', function(snap) {
+      if (snap.exists() && snap.val().status === 'accepted' && state === 'searching') {
+        foundDriver(snap.val().driverName || 'محمد');
+      }
+    });
+
+    // محاكاة قبول سائق بعد 5 ثوانٍ إذا لم يقبل أحد حقيقي
+    setTimeout(() => {
+      if (state === 'searching') tripRef.update({ status: 'accepted', driverName: 'أحمد (محاكاة)' });
+    }, 5000);
+  } else {
+    setTimeout(() => foundDriver('محمد'), 3500);
+  }
+}
+
+function cancelSearch() {
+  state = 'idle';
+  document.getElementById('searchingOverlay').classList.remove('active');
+  document.getElementById('mainBottomSheet').style.display = 'block';
+  if (currentTripId && window.snadDB) {
+    window.snadDB.ref('trips/' + currentTripId).update({ status: 'cancelled' });
+  }
+  toast('error','❌ تم إلغاء الطلب');
+}
+
+function foundDriver(driverName) {
+  state = 'active';
+  document.getElementById('searchingOverlay').classList.remove('active');
+  document.getElementById('tripOverlay').classList.add('active');
+  document.getElementById('driverCar').setAttribute('opacity','1');
+  toast('success','🚗 تم إيجاد سائق! ' + (driverName || 'السائق') + ' في طريقه إليك');
+  // حدث GA4: تم إيجاد سائق
+  if (window.gtag) gtag('event', 'driver_found', { ride_type: selectedRideType || 'eco', fare: parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22 });
+  startTripProgress();
+}
+
+// ---- TRIP PROGRESS ----
+function startTripProgress() {
+  tripProgress = 0;
+  let phase = 0;
+  const etaNums = ['٥ د', '٤ د', '٣ د', '٢ د', '١ د', 'وصل!', 'في الطريق', 'اقتراب', 'وصلت!'];
+
+  progressTimer = setInterval(() => {
+    tripProgress += 1.5;
+    document.getElementById('tripFill').style.width = tripProgress + '%';
+    moveCar(tripProgress);
+
+    if (tripProgress >= 30 && phase === 0) {
+      phase = 1;
+      document.getElementById('tripStatusMsg').textContent = 'السائق وصل إلى موقعك';
+      document.getElementById('etaNum').textContent = 'وصل!';
+      toast('info','📍 السائق وصل، تفضل بالصعود');
+    }
+    if (tripProgress >= 55 && phase === 1) {
+      phase = 2;
+      document.getElementById('tripStatusMsg').textContent = 'في طريقك إلى وجهتك';
+      document.getElementById('etaNum').textContent = '٨ د';
+    }
+    if (tripProgress >= 100) {
+      clearInterval(progressTimer);
+      tripDone();
+    }
+  }, 180);
+}
+
+function moveCar(p) {
+  const car = document.getElementById('driverCar');
+  const startX = 160, startY = 280, endX = 90, endY = 165;
+  const eased = p / 100;
+  const x = startX + (endX - startX) * eased;
+  const y = startY + (endY - startY) * eased;
+  car.setAttribute('transform', `translate(${x},${y})`);
+}
+
+function tripDone() {
+  state = 'rating';
+  document.getElementById('tripOverlay').classList.remove('active');
+  document.getElementById('ratingOverlay').classList.add('active');
+  toast('success','✅ وصلت بأمان!');
+}
+
+// ---- VOICE CALL IMPLEMENTATION (VoIP) ----
+let audioCtx = null;
+let ringtoneInterval = null;
+let callDurationTimer = null;
+let callDurationSecs = 0;
+let isMuted = false;
+let isSpeaker = false;
+
+function startRingtoneSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    audioCtx = new AudioCtx();
+    
+    function playBeep() {
+      if (!audioCtx || audioCtx.state === 'closed') return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(425, audioCtx.currentTime); // Standard phone ring frequency
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.2);
+    }
+
+    playBeep();
+    ringtoneInterval = setInterval(playBeep, 2500);
+  } catch(e) { console.log(e); }
+}
+
+function stopRingtoneSound() {
+  if (ringtoneInterval) clearInterval(ringtoneInterval);
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+
+function callDriver() {
+  document.getElementById('voiceCallOverlay').classList.add('active');
+  document.getElementById('callStatusText').innerHTML = '📡 جاري رن الهاتف...';
+  document.getElementById('callTargetName').textContent = 'الكابتن محمد السعيد';
+  document.getElementById('callTargetImg').src = 'assets/logo-driver.jpg';
+  
+  isMuted = false; isSpeaker = false;
+  document.getElementById('btnMute').classList.remove('active-btn');
+  document.getElementById('btnSpeaker').classList.remove('active-btn');
+  callDurationSecs = 0;
+
+  startRingtoneSound();
+
+  // Simulate answer after 3 seconds
+  setTimeout(() => {
+    if (!document.getElementById('voiceCallOverlay').classList.contains('active')) return;
+    stopRingtoneSound();
+    document.getElementById('callStatusText').innerHTML = '🟢 متصل (00:00)';
+    toast('success', '📞 تم رَد المكالمة');
+
+    callDurationTimer = setInterval(() => {
+      callDurationSecs++;
+      const m = Math.floor(callDurationSecs / 60).toString().padStart(2, '0');
+      const s = (callDurationSecs % 60).toString().padStart(2, '0');
+      document.getElementById('callStatusText').innerHTML = `🟢 متصل (${toAr(m)}:${toAr(s)})`;
+    }, 1000);
+
+  }, 3000);
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  const btn = document.getElementById('btnMute');
+  btn.classList.toggle('active-btn', isMuted);
+  toast('info', isMuted ? '🎙️ تم كتم الميكروفون' : '🎙️ الميكروفون يعمل');
+}
+
+function toggleSpeaker() {
+  isSpeaker = !isSpeaker;
+  const btn = document.getElementById('btnSpeaker');
+  btn.classList.toggle('active-btn', isSpeaker);
+  toast('info', isSpeaker ? '🔊 تم تشغيل مكبر الصوت' : '🎧 استخدام السماعة الداخلية');
+}
+
+function endVoiceCall() {
+  stopRingtoneSound();
+  if (callDurationTimer) clearInterval(callDurationTimer);
+  document.getElementById('voiceCallOverlay').classList.remove('active');
+  toast('info', '🔴 تم إنهاء المكالمة');
+}
+
+function msgDriver() { toast('info','💬 تم فتح المحادثة الفورية مع الكابتن'); }
+
+function cancelTrip() {
+  clearInterval(progressTimer);
+  state = 'idle';
+  document.getElementById('tripOverlay').classList.remove('active');
+  document.getElementById('driverCar').setAttribute('opacity','0');
+  document.getElementById('routeLine').setAttribute('opacity','0');
+  document.getElementById('dropoffPin').setAttribute('opacity','0');
+  document.getElementById('dropoffTxt').textContent = 'إلى أين؟';
+  document.getElementById('dropoffTxt').classList.add('empty');
+  document.getElementById('tripFill').style.width = '0%';
+  document.getElementById('mainBottomSheet').style.display = 'block';
+  dropoff = false;
+  toast('error','❌ تم إلغاء الرحلة');
+}
+
+// ---- RATING ----
+function rateStar(val) {
+  tripRating = val;
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('lit', parseInt(b.dataset.v) <= val);
+  });
+}
+
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+function submitRating() {
+  // حدث GA4: تقييم الرحلة
+  if (window.gtag && tripRating > 0) {
+    gtag('event', 'trip_rating', {
+      rating: tripRating,
+      currency: 'SAR',
+      value: parseFloat(document.getElementById('fareVal') ? document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'') : 0) || 22
+    });
+  }
+  state = 'idle';
+  document.getElementById('ratingOverlay').classList.remove('active');
+  document.getElementById('driverCar').setAttribute('opacity','0');
+  document.getElementById('routeLine').setAttribute('opacity','0');
+  document.getElementById('dropoffPin').setAttribute('opacity','0');
+  document.getElementById('dropoffTxt').textContent = 'إلى أين؟';
+  document.getElementById('dropoffTxt').classList.add('empty');
+  document.getElementById('tripFill').style.width = '0%';
+  document.getElementById('mainBottomSheet').style.display = 'block';
+  dropoff = false; tripRating = 0;
+  document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('lit'));
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  toast('success','🌟 شكراً على تقييمك!');
+}
+
+// ---- NAVIGATION ----
+function gotoHome() {
+  switchScreen('homeScreen');
+  setNav('navHome');
+}
+
+function gotoHistory() {
+  switchScreen('historyScreen');
+  setNav('navTrips');
+}
+
+function gotoProfile() {
+  switchScreen('profileScreen');
+  setNav('navMe');
+}
+
+function showProfile() { gotoProfile(); }
+
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setNav(id) {
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function doLogout() {
+  switchScreen('loginScreen');
+  toast('info','👋 تم تسجيل الخروج');
+}
+
+function centerMap() { toast('info','📍 تم تحديد موقعك'); }
+
+// ---- PAYTABS PAYMENT GATEWAY INTEGRATION ----
+let selectedPayMethod = 'mada';
+
+function openPaytabsModal() {
+  const fareEl = document.getElementById('fareVal');
+  const currentFare = fareEl ? fareEl.textContent : '٢٢';
+  // تحديث المبلغ بأمان
+  const amountBtn = document.getElementById('payAmountBtn');
+  if (amountBtn) amountBtn.textContent = currentFare;
+  const otpAmt = document.getElementById('otpFareAmt');
+  if (otpAmt) otpAmt.textContent = currentFare;
+  // إعادة تعيين طريقة الدفع والزر
+  selectedPayMethod = 'mada';
+  const pillMada = document.getElementById('pillMada');
+  if (pillMada) {
+    document.querySelectorAll('.paypill').forEach(p => p.classList.remove('selected'));
+    pillMada.classList.add('selected');
+  }
+  // إظهار وإخفاء الصناديق
+  const formBox  = document.getElementById('payFormBox');
+  const appleBox = document.getElementById('applePayBox');
+  const cashBox  = document.getElementById('cashBox');
+  if (formBox)  formBox.style.display  = 'block';
+  if (appleBox) appleBox.style.display = 'none';
+  if (cashBox)  cashBox.style.display  = 'none';
+  // تحديث نص الزر
+  const btnText = document.getElementById('payBtnText');
+  if (btnText) btnText.innerHTML = `🛡️ تأكيد ودفع ${currentFare} ر.س عبر PayTabs`;
+  // إعادة تفعيل الزر
+  const mainBtn = document.getElementById('mainPayBtn');
+  if (mainBtn) mainBtn.disabled = false;
+  // فتح النافذة
+  document.getElementById('paytabsModal').classList.add('active');
+
+  // تهيئة PayTabs Managed Form بعد رندرة المودال
+  setTimeout(setupPaytabsForm, 100);
+}
+
+
+function closePaytabsModal() {
+  document.getElementById('paytabsModal').classList.remove('active');
+}
+
+function togglePaytabsConfig() {
+  const box = document.getElementById('paytabsConfigBox');
+  box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+}
+
+// ========================================
+// PayTabs API - Real Payment Integration
+// يتصل بخادم Node.js المحلي على port 3000
+// ========================================
+const SERVER_URL = 'http://localhost:3000';
+
+function savePaytabsKeys() {
+  const profId = document.getElementById('payProfileId').value.trim();
+  const sKey = document.getElementById('payServerKey').value.trim();
+
+  if (!profId || !sKey || sKey.includes('...')) {
+    toast('error', '⚠️ يرجى إدخال رقم البروفايل ومفتاح الخادم الحقيقي');
+    return;
+  }
+
+  // إرسال المفاتيح للخادم المحلي
+  fetch(`${SERVER_URL}/api/keys`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ profileId: profId, serverKey: sKey })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem('paytabs_profile_id', profId);
+      document.getElementById('paytabsConfigBox').style.display = 'none';
+      toast('success', `✅ تم ربط PayTabs (Profile: ${profId}) بالخادم بنجاح!`);
+      document.getElementById('paytabsStatusLabel').textContent = `مؤسسة سند - متصل (${profId}) 🟢`;
+    } else {
+      toast('error', '❌ فشل حفظ المفاتيح: ' + (data.error || 'خطأ غير معروف'));
+    }
+  })
+  .catch(() => {
+    toast('error', '❌ تأكد أن الخادم يعمل: node server.js');
+  });
+}
+
+function selectPaypill(type) {
+  selectedPayMethod = type;
+  document.querySelectorAll('.paypill').forEach(p => p.classList.remove('selected'));
+  const formBox  = document.getElementById('payFormBox');
+  const appleBox = document.getElementById('applePayBox');
+  const cashBox  = document.getElementById('cashBox');
+  const btnText  = document.getElementById('payBtnText');
+  const amountEl = document.getElementById('payAmountBtn');
+  const fare     = amountEl ? amountEl.textContent : '٢٢';
+
+  // إخفاء كل الصناديق
+  if (formBox)  formBox.style.display  = 'none';
+  if (appleBox) appleBox.style.display = 'none';
+  if (cashBox)  cashBox.style.display  = 'none';
+
+  // تحديث شريط الدفع السفلي (إن وجد)
+  const methodEl = document.getElementById('paySelectedMethod');
+
+  if (type === 'mada') {
+    const p = document.getElementById('pillMada');
+    if (p) p.classList.add('selected');
+    if (methodEl) methodEl.textContent = '💳 مدى Mada';
+    if (formBox)  formBox.style.display = 'block';
+    if (btnText)  btnText.innerHTML = `💳 ادفع ${fare} ر.س بمدى عبر PayTabs`;
+  } else if (type === 'apple') {
+    const p = document.getElementById('pillApple');
+    if (p) p.classList.add('selected');
+    if (methodEl) methodEl.textContent = '🍎 Apple Pay';
+    if (appleBox) appleBox.style.display = 'block';
+    if (btnText)  btnText.innerHTML = `🍎 ادفع ${fare} ر.س بـ Apple Pay`;
+  } else if (type === 'card') {
+    const p = document.getElementById('pillCard');
+    if (p) p.classList.add('selected');
+    if (methodEl) methodEl.textContent = '💳 فيزا / ماستر';
+    if (formBox)  formBox.style.display = 'block';
+    if (btnText)  btnText.innerHTML = `💳 ادفع ${fare} ر.س بالبطاقة عبر PayTabs`;
+  } else if (type === 'cash') {
+    const p = document.getElementById('pillCash');
+    if (p) p.classList.add('selected');
+    if (methodEl) methodEl.textContent = '💵 دفع نقدي';
+    if (cashBox)  cashBox.style.display = 'block';
+    if (btnText)  btnText.innerHTML = `💵 تأكيد الحجز - الدفع نقداً`;
+  }
+}
+
+// =============================================
+// تنسيق حقل رقم البطاقة تلقائياً
+// =============================================
+function formatCardNumber(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 16);
+  const parts = [];
+  for (let i = 0; i < v.length; i += 4) parts.push(v.substring(i, i + 4));
+  input.value = parts.join(' ');
+
+  // تحديث عرض البطاقة
+  const display = document.getElementById('cardNumDisplay');
+  const padded  = v.padEnd(16, '•');
+  if (display) {
+    display.textContent = padded.replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  // اكتشاف نوع البطاقة
+  detectCardType(v);
+}
+
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2);
+  input.value = v;
+  const exp = document.getElementById('cardExpDisplay');
+  if (exp) exp.textContent = v || 'MM/YY';
+}
+
+function flipCard(show) {
+  const preview = document.getElementById('cardPreview');
+  if (preview) preview.style.opacity = show ? '0.8' : '1';
+}
+
+function detectCardType(num) {
+  const preview   = document.getElementById('cardPreview');
+  const badge     = document.getElementById('cardBrandLogo');
+  const typeBadge = document.getElementById('cardTypeIcon');
+
+  preview?.classList.remove('mada-card','visa-card','master-card');
+
+  // مدى (بطاقات سعودية محلية - تبدأ بـ 4 أو 5 وأرقام محددة)
+  const madaBins = ['400861','401757','407197','407395','410685','410834','412672','428671','428672','428673','431361','432328','434107','439954','440533','440647','440795','445564','446393','446404','446672','455036','457865','458456','462220','468540','468541','468542','468543','542905','543085','543357','549760','558563','585265','588982','589005','604906','636120','968201','968202','968203','968204','968205','968208','968209','968210','968211','968212'];
+  const isMada = madaBins.some(b => num.startsWith(b));
+  
+  if (isMada) {
+    if (badge)     badge.textContent = '🇸🇦';
+    if (typeBadge) typeBadge.textContent = '🇸🇦';
+    preview?.classList.add('mada-card');
+  } else if (/^4/.test(num)) {
+    if (badge)     badge.textContent = '💳';
+    if (typeBadge) typeBadge.textContent = '💳';
+    preview?.classList.add('visa-card');
+  } else if (/^5[1-5]/.test(num) || /^2[2-7]/.test(num)) {
+    if (badge)     badge.textContent = '💳';
+    if (typeBadge) typeBadge.textContent = '💳';
+    preview?.classList.add('master-card');
+  } else {
+    if (badge)     badge.textContent = '🏦';
+    if (typeBadge) typeBadge.textContent = '';
+  }
+}
+
+function processPaytabsPayment() {
+  const fareAr = document.getElementById('fareVal').textContent;
+  const fareNum = fareAr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+
+  // ─── الدفع النقدي ───────────────────────────────────
+  if (selectedPayMethod === 'cash') {
+    closePaytabsModal();
+    toast('info', '💵 تم اختيار الدفع نقداً عند الوصول');
+    startSearch();
+    return;
+  }
+
+  // ─── PayTabs Managed Form — تجريبي فقط (موقف لحين تفعيل Client Key) ──
+  // paylib محمّل لكن يحتاج Client Key صحيح — نتجاوزه مؤقتاً
+  // if (typeof paylib !== 'undefined' && (selectedPayMethod === 'mada' || selectedPayMethod === 'card')) { ... }
+
+
+  // ─── Apple Pay (يعتمد 3DS) ──────────────────────────
+  if (selectedPayMethod === 'apple') {
+    closePaytabsModal();
+    toast('info', '🍎 جاري التحقق عبر Apple Pay...');
+    setTimeout(() => {
+      toast('success', `✅ تمت الموافقة! ${fareAr} ر.س`);
+      startSearch();
+    }, 1500);
+    return;
+  }
+
+  // ─── دفع بالبطاقة المباشر ───────────────────────────
+  const cardNumEl  = document.getElementById('directCardNum');
+  const expMonthEl = document.getElementById('directExpMonth');
+  const expYearEl  = document.getElementById('directExpYear');
+  const cvvEl      = document.getElementById('directCvv');
+  const holderEl   = document.getElementById('directHolder');
+
+  const cardNum    = cardNumEl  ? cardNumEl.value.replace(/\s+/g,'') : '';
+  const expMonth   = expMonthEl ? expMonthEl.value.trim() : '';
+  const expYear    = expYearEl  ? expYearEl.value.trim()  : '';
+  const cvv        = cvvEl      ? cvvEl.value             : '';
+  const holderName = holderEl   ? holderEl.value          : '';
+
+  // ─── التحقق من البيانات ─────────────────────────────
+  let hasError = false;
+  [cardNumEl, expMonthEl, expYearEl, cvvEl].forEach(el => el?.classList.remove('error','valid'));
+
+  if (!cardNum || cardNum.length < 13) {
+    cardNumEl?.classList.add('error');
+    hasError = true;
+  } else {
+    cardNumEl?.classList.add('valid');
+  }
+
+  if (!expMonth || isNaN(expMonth) || +expMonth < 1 || +expMonth > 12) {
+    expMonthEl?.classList.add('error');
+    hasError = true;
+  } else {
+    expMonthEl?.classList.add('valid');
+  }
+
+  if (!expYear || isNaN(expYear) || expYear.length < 2) {
+    expYearEl?.classList.add('error');
+    hasError = true;
+  } else {
+    expYearEl?.classList.add('valid');
+  }
+
+  if (!cvv || cvv.length < 3) {
+    cvvEl?.classList.add('error');
+    hasError = true;
+  } else {
+    cvvEl?.classList.add('valid');
+  }
+
+  if (hasError) {
+    toast('error', '⚠️ يرجى التحقق من بيانات البطاقة');
+    return;
+  }
+
+  const expMonth2 = ('00' + expMonth).slice(-2);
+  const expYear2  = expYear.length === 4 ? expYear.slice(-2) : ('00' + expYear).slice(-2);
+
+  // ─── إرسال للخادم ───────────────────────────────────
+  const btnText = document.getElementById('payBtnText');
+  const mainBtn = document.getElementById('mainPayBtn');
+  if (btnText) btnText.innerHTML = '⏳ جاري التحقق من البطاقة...';
+  if (mainBtn) mainBtn.disabled = true;
+
+  fetch(`${SERVER_URL}/api/pay-direct`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      amount:        parseFloat(fareNum),
+      currency:      'SAR',
+      description:   'رحلة سند تاكسي',
+      cardNumber:    cardNum,
+      expiryMonth:   expMonth2,
+      expiryYear:    '20' + expYear2,
+      cvv:           cvv,
+      holderName:    holderName || 'عميل سند',
+      customerName:  holderName || 'عميل سند',
+      customerEmail: 'customer@snad.sa',
+      customerPhone: document.getElementById('phoneInput')?.value || '+966500000000'
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+    if (mainBtn) mainBtn.disabled = false;
+
+    if (data.success && data.direct) {
+      // ✅ تم الدفع مباشرةً
+      closePaytabsModal();
+      toast('success', `✅ تم خصم ${fareAr} ر.س بنجاح! (Ref: ${data.tranRef})`);
+      setTimeout(startSearch, 500);
+
+    } else if (data.success && data.requires3DS) {
+      // 🔐 يحتاج التحقق ثلاثي (بنك يطلب OTP)
+      closePaytabsModal();
+      toast('info', '🔐 بنكك يطلب تأكيد إضافي (3D Secure)...');
+      openPaymentIframe(data.paymentUrl, data.tranRef, fareAr);
+
+    } else {
+      toast('error', '❌ ' + (data.error || 'تم رفض البطاقة'));
+      cardNumEl?.classList.add('error');
+    }
+  })
+  .catch(() => {
+    if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+    if (mainBtn) mainBtn.disabled = false;
+    toast('error', '❌ الخادم غير متاح. شغّل: node server.js');
+  });
+}
+
+
+// فتح صفحة PayTabs في نافذة جديدة وعرض شاشة الانتظار
+function openPaymentIframe(url, tranRef, fareAr) {
+  const overlay = document.getElementById('payiframeOverlay');
+
+  // ── حفظ البيانات ──────────────────────────────
+  window._payTranRef = tranRef;
+  window._payFareAr  = fareAr;
+  window._payUrl     = url;
+
+  // ── تحديث معلومات المعاملة ────────────────────
+  const refEl = document.getElementById('payTranRefDisplay');
+  const amtEl = document.getElementById('payAmountDisplay');
+  if (refEl) refEl.textContent = tranRef;
+  if (amtEl) amtEl.textContent = fareAr + ' ر.س';
+
+  // ── إعادة تعيين الزر ─────────────────────────
+  const btnText = document.getElementById('threeDSBtnText');
+  const btn     = document.getElementById('threeDSConfirmBtn');
+  if (btnText) btnText.textContent = '✅ أتممت الدفع — تأكيد';
+  if (btn)     btn.disabled = false;
+
+  // ── فتح صفحة PayTabs في نافذة جديدة ──────────
+  window._payWin = window.open(url, 'paytabs_payment',
+    'width=500,height=700,top=50,left=50,menubar=no,toolbar=no,location=yes,status=no'
+  );
+
+  // ── إظهار شاشة الانتظار ───────────────────────
+  overlay.style.display = 'flex';
+
+  // ── مراقبة إغلاق النافذة تلقائياً ───────────
+  window._payWinCheck = setInterval(() => {
+    if (window._payWin && window._payWin.closed) {
+      clearInterval(window._payWinCheck);
+      // النافذة أُغلقت — تحقق تلقائياً من الحالة
+      const status = document.getElementById('payWindowStatus');
+      if (status) status.innerHTML = '✅ أغلقت نافذة الدفع<br>جاري التحقق من حالة المعاملة...';
+      setTimeout(checkPaymentStatus, 1000);
+    }
+  }, 800);
+}
+
+// إعادة فتح نافذة الدفع
+function reopenPayWindow() {
+  const url = window._payUrl;
+  if (url) {
+    window._payWin = window.open(url, 'paytabs_payment',
+      'width=500,height=700,top=50,left=50,menubar=no,toolbar=no,location=yes,status=no'
+    );
+  } else {
+    toast('error', '⚠️ انتهت صلاحية جلسة الدفع. ابدأ من جديد');
+  }
+}
+
+
+
+// يُستدعى عند ضغط زر "أتممت التحقق"
+async function checkPaymentStatus() {
+  const tranRef = window._payTranRef;
+  const fareAr  = window._payFareAr;
+
+  if (!tranRef) {
+    toast('error', '⚠️ لا توجد معاملة للتحقق منها');
+    return;
+  }
+
+  const btnText = document.getElementById('threeDSBtnText');
+  const btn     = document.getElementById('threeDSConfirmBtn');
+  if (btnText) btnText.textContent = '⏳ جاري التحقق من البنك...';
+  if (btn)     btn.disabled = true;
+
+  try {
+    const resp = await fetch(`${SERVER_URL}/api/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tranRef })
+    });
+    const data = await resp.json();
+
+    if (data.success && (data.status === 'A' || data.status === 'H')) {
+      // ✅ تمت الموافقة
+      closePaymentIframe();
+      toast('success', `✅ تم التحقق والدفع بنجاح! ${fareAr} ر.س`);
+      setTimeout(startSearch, 500);
+
+    } else if (data.status === 'P') {
+      // ⏳ لا يزال معلقاً
+      if (btnText) btnText.textContent = '✅ أتممت التحقق — تأكيد الدفع';
+      if (btn)     btn.disabled = false;
+      toast('info', '⏳ المعاملة لا تزال قيد التحقق. أكمل الخطوات في النافذة أولاً');
+
+    } else {
+      // ❌ رُفض
+      if (btnText) btnText.textContent = '✅ أتممت التحقق — تأكيد الدفع';
+      if (btn)     btn.disabled = false;
+      closePaymentIframe();
+      toast('error', '❌ ' + (data.message || 'تم رفض المعاملة من قِبل البنك'));
+    }
+  } catch (e) {
+    if (btnText) btnText.textContent = '✅ أتممت التحقق — تأكيد الدفع';
+    if (btn)     btn.disabled = false;
+    toast('error', '❌ تعذّر التحقق. تأكد من اتصال الخادم');
+  }
+}
+
+function closePaymentIframe() {
+  // إيقاف مراقبة النافذة
+  if (window._payWinCheck) { clearInterval(window._payWinCheck); window._payWinCheck = null; }
+  // إغلاق النافذة الفرعية إن كانت مفتوحة
+  if (window._payWin && !window._payWin.closed) { try { window._payWin.close(); } catch(e){} }
+
+  const overlay = document.getElementById('payiframeOverlay');
+  if (overlay) overlay.style.display = 'none';
+  window._payTranRef = null;
+  window._payUrl     = null;
+}
+
+
+
+function cancelOtpPayment() {
+  document.getElementById('paytabsOtpOverlay').classList.remove('active');
+  toast('error', '✖ تم إلغاء عملية الدفع');
+}
+
+function confirmInAppOtpPayment() {
+  const fareAr = document.getElementById('fareVal').textContent;
+  document.getElementById('paytabsOtpOverlay').classList.remove('active');
+  closePaytabsModal();
+  toast('success', `✅ تم الدفع (${fareAr} ر.س)`);
+  setTimeout(startSearch, 400);
+}
+
+// ---- HELPERS ----
+function toAr(n) {
+  return n.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+
+function toast(type, msg) {
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; t.style.transition = 'all 0.3s ease'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+</script>
+
+<!-- ================================================
+     PayTabs Managed Form SDK
+     يُوكّن بيانات البطاقة مباشرةً ويُعيد token
+================================================ -->
+<script src="https://secure.paytabs.sa/payment/js/paylib.js" defer></script>
+<script>
+// التحقق من تحميل paylib.js بعد 2 ثانية من تحميل الصفحة
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (typeof paylib !== 'undefined') {
+      console.log('[PayTabs] paylib.js محمّل ✅ — Managed Form جاهز');
+    } else {
+      console.warn('[PayTabs] paylib.js لم يُحمَّل — سيُستخدم الدفع المباشر');
+    }
+  }, 2000);
+});
+
+// تهيئة PayTabs inlineForm — تُستدعى عند فتح مودال الدفع
+function setupPaytabsForm() {
+  if (typeof paylib === 'undefined') {
+    console.warn('[PayTabs] paylib غير محمّل');
+    return;
+  }
+
+  const form = document.getElementById('pt-payment-form');
+  if (!form) return;
+
+  const btnText = document.getElementById('payBtnText');
+  const mainBtn = document.getElementById('mainPayBtn');
+
+  // paylib.inlineForm — الـ API الرسمي الصحيح
+  paylib.inlineForm({
+    key:  'CHKM79-V92P6K-9VMKTN-QVR79N',
+    form: form,
+    callback: function(response) {
+      clearTimeout(window._paylibTimeout);
+      console.log('[PayTabs] callback:', response);
+
+      if (response.status === 200 && response.token) {
+        // ✅ توكين نجح — أرسل الـ token للخادم
+        chargeWithPaytabsToken(response.token, null);
+
+      } else if (response.error) {
+        if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+        if (mainBtn) mainBtn.disabled = false;
+        // رسائل خطأ محددة حسب الحقل
+        if (response.errorField === 'number') {
+          toast('error', '❌ رقم البطاقة غير صحيح');
+        } else if (response.errorField === 'expmonth' || response.errorField === 'expyear') {
+          toast('error', '❌ تاريخ الانتهاء غير صحيح');
+        } else if (response.errorField === 'cvv') {
+          toast('error', '❌ رمز CVV غير صحيح');
+        } else {
+          toast('error', '❌ ' + (response.errorText || 'بيانات البطاقة غير صحيحة'));
+        }
+      } else {
+        if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+        if (mainBtn) mainBtn.disabled = false;
+        toast('error', '❌ فشل التوكين');
+      }
+    }
+  });
+
+  console.log('[PayTabs] inlineForm تمّت تهيئته ✅');
+}
+
+// ── شحن البطاقة باستخدام الـ Token ─────────────────────────
+async function chargeWithPaytabsToken(token, tranRef) {
+  const fareAr  = document.getElementById('fareVal')?.textContent || '٢٢';
+  const fareNum = fareAr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+
+  try {
+    const resp = await fetch(`${SERVER_URL}/api/pay-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        tranRef,
+        amount:   parseFloat(fareNum),
+        currency: 'SAR',
+        holderName: document.getElementById('directHolder')?.value || 'عميل سند'
+      })
+    });
+    const data = await resp.json();
+
+    if (data.success && data.direct) {
+      // ✅ دفع مباشر
+      closePaytabsModal();
+      toast('success', `✅ تم الدفع! ${fareAr} ر.س`);
+      setTimeout(startSearch, 500);
+
+    } else if (data.success && data.requires3DS) {
+      // 🔐 يحتاج 3DS
+      closePaytabsModal();
+      toast('info', '🔐 بنكك يطلب تأكيداً إضافياً...');
+      openPaymentIframe(data.paymentUrl, data.tranRef, fareAr);
+
+    } else {
+      const btnText = document.getElementById('payBtnText');
+      const mainBtn = document.getElementById('mainPayBtn');
+      if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+      if (mainBtn) mainBtn.disabled = false;
+      toast('error', '❌ ' + (data.error || 'تم رفض البطاقة'));
+    }
+  } catch (e) {
+    const btnText = document.getElementById('payBtnText');
+    const mainBtn = document.getElementById('mainPayBtn');
+    if (btnText) btnText.innerHTML = '🛡️ تأكيد ودفع';
+    if (mainBtn) mainBtn.disabled = false;
+    toast('error', '❌ الخادم غير متاح');
+  }
+}
+</script>
+
+<!-- =========================================================
+     GOOGLE MAPS INTEGRATION — PASSENGER APP
+========================================================= -->
+<script>
+const GMAPS_KEY = 'AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc';
+const RIYADH = { lat: 24.7136, lng: 46.6753 };
+
+// خريطة الراكب
+let pMap, pDirections, pDirectionsRenderer;
+let pUserMarker   = null; // موقع المستخدم
+let pPickupMarker = null; // نقطة الالتقاط
+let pDropoffMarker= null; // نقطة التوصيل
+let pDriverMarker = null; // السائق المتحرك
+let pUserLatLng   = null;
+let pPickupLatLng = null;
+let pDropoffLatLng= null;
+let pDriverAnimInterval = null;
+
+// ===== تهيئة الخريطة =====
+function initPassengerMap() {
+  const mapDiv = document.getElementById('passengerMap');
+  if (!mapDiv) return;
+
+  pMap = new google.maps.Map(mapDiv, {
+    center: RIYADH,
+    zoom: 14,
+    disableDefaultUI: true,
+    gestureHandling: 'greedy',
+    styles: [
+      { featureType:'poi', stylers:[{visibility:'off'}] },
+      { featureType:'transit', stylers:[{visibility:'off'}] },
+      { elementType:'labels.icon', stylers:[{visibility:'off'}] }
+    ]
+  });
+
+  pDirections         = new google.maps.DirectionsService();
+  pDirectionsRenderer = new google.maps.DirectionsRenderer({
+    suppressMarkers: true,
+    polylineOptions: { strokeColor:'#1a73e8', strokeWeight:5, strokeOpacity:0.85 }
+  });
+  pDirectionsRenderer.setMap(pMap);
+
+  // === تحديد موقع المستخدم (متعدد المصادر) ===
+  detectUserLocation();
+
+  // === إعداد Places Autocomplete لحقل البحث الجديد ===
+  const searchInp = document.getElementById('placesSearchInput');
+  if (searchInp && !_placesAC) {
+    _placesAC = new google.maps.places.Autocomplete(searchInp, {
+      componentRestrictions: { country: 'SA' },
+      fields: ['geometry', 'name', 'formatted_address'],
+      types: ['geocode', 'establishment']
+    });
+    _placesAC.addListener('place_changed', () => {
+      const place = _placesAC.getPlace();
+      if (!place || !place.geometry) return;
+      const latLng = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng()
+      };
+      const name = place.name || place.formatted_address || searchInp.value;
+      applyLocationSelection(name, latLng);
+    });
+  }
+}
+
+// === كشف الموقع بأفضل طريقة متاحة ===
+function detectUserLocation() {
+  // الخطوة 1: جرّب GPS أولاً مع timeout قصير
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        // نجح GPS
+        const latLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        applyUserLocation(latLng, 'GPS');
+      },
+      err => {
+        // GPS فشل → جرّب Google Maps Geolocation API
+        tryGoogleGeolocation();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 6000,
+        maximumAge: 30000
+      }
+    );
+  } else {
+    tryGoogleGeolocation();
+  }
+}
+
+// === Google Maps Geolocation (IP + WiFi) ===
+function tryGoogleGeolocation() {
+  fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ considerIp: true })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data && data.location) {
+      const latLng = { lat: data.location.lat, lng: data.location.lng };
+      applyUserLocation(latLng, 'Google');
+    } else {
+      tryIPGeolocation();
+    }
+  })
+  .catch(() => tryIPGeolocation());
+}
+
+// === IP Geolocation كملاذ أخير ===
+function tryIPGeolocation() {
+  fetch('https://ipapi.co/json/')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.latitude) {
+        const latLng = { lat: data.latitude, lng: data.longitude };
+        applyUserLocation(latLng, 'IP');
+      } else {
+        applyUserLocation(RIYADH, 'default');
+      }
+    })
+    .catch(() => applyUserLocation(RIYADH, 'default'));
+}
+
+// === تطبيق الموقع على الخريطة ===
+function applyUserLocation(latLng, source) {
+  if (!pMap) return;
+  pUserLatLng = latLng;
+  pPickupLatLng = latLng;
+  pMap.setCenter(latLng);
+  pMap.setZoom(source === 'default' ? 13 : 15);
+  setUserLocationMarker(latLng);
+
+  // تحديث نص موقعك الحالي بالعنوان الحقيقي
+  const geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ location: latLng, language: 'ar', region: 'SA' }, (results, status) => {
+    if (status === 'OK' && results[0]) {
+      const addr = results[0].formatted_address
+        .replace(', المملكة العربية السعودية', '')
+        .replace(', Saudi Arabia', '');
+      document.getElementById('pickupTxt').textContent = addr;
+      document.getElementById('pickupTxt').classList.remove('empty');
+    }
+  });
+}
+
+
+// === مؤشر موقع المستخدم (نقطة زرقاء) ===
+function setUserLocationMarker(pos) {
+  if (pUserMarker) pUserMarker.setMap(null);
+  pUserMarker = new google.maps.Marker({
+    position: pos,
+    map: pMap,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillColor: '#1a73e8',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 3
+    },
+    title: 'موقعي'
+  });
+}
+
+// === تعيين نقطة الالتقاط ===
+function setPassengerPickup(latLng, label) {
+  pPickupLatLng = latLng;
+  if (pPickupMarker) pPickupMarker.setMap(null);
+  pPickupMarker = new google.maps.Marker({
+    position: latLng,
+    map: pMap,
+    icon: {
+      url: 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+          <circle cx="20" cy="20" r="18" fill="#1a73e8" stroke="#fff" stroke-width="3"/>
+          <circle cx="20" cy="20" r="7" fill="#fff"/>
+          <polygon points="20,42 12,28 28,28" fill="#1a73e8"/>
+        </svg>`),
+      anchor: new google.maps.Point(20, 48),
+      scaledSize: new google.maps.Size(40, 50)
+    },
+    title: 'نقطة الانطلاق'
+  });
+  tryShowRoute();
+}
+
+// === تعيين نقطة التوصيل ===
+function setPassengerDropoff(latLng, label) {
+  pDropoffLatLng = latLng;
+  if (pDropoffMarker) pDropoffMarker.setMap(null);
+  pDropoffMarker = new google.maps.Marker({
+    position: latLng,
+    map: pMap,
+    icon: {
+      url: 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+          <rect x="2" y="2" width="36" height="36" rx="8" fill="#ea4335" stroke="#fff" stroke-width="3"/>
+          <text x="20" y="26" font-size="18" text-anchor="middle" fill="white" font-family="Arial">📍</text>
+          <polygon points="20,44 12,36 28,36" fill="#ea4335"/>
+        </svg>`),
+      anchor: new google.maps.Point(20, 48),
+      scaledSize: new google.maps.Size(40, 50)
+    },
+    title: 'وجهتك'
+  });
+  tryShowRoute();
+}
+
+// === عرض المسار بين نقطتين ===
+function tryShowRoute() {
+  if (!pPickupLatLng || !pDropoffLatLng) return;
+  pDirections.route({
+    origin: pPickupLatLng,
+    destination: pDropoffLatLng,
+    travelMode: google.maps.TravelMode.DRIVING,
+    region: 'SA'
+  }, (result, status) => {
+    if (status === 'OK') {
+      pDirectionsRenderer.setDirections(result);
+      // ضبط zoom ليشمل المسار كاملاً
+      const bounds = new google.maps.LatLngBounds();
+      bounds.extend(pPickupLatLng);
+      bounds.extend(pDropoffLatLng);
+      pMap.fitBounds(bounds, { top:80, bottom:200, left:40, right:40 });
+
+      // حساب الوقت والمسافة
+      const leg = result.routes[0].legs[0];
+      if (leg) {
+        const distEl = document.getElementById('distanceVal');
+        const durEl  = document.getElementById('durationVal');
+        if (distEl) distEl.textContent = leg.distance.text;
+        if (durEl)  durEl.textContent  = leg.duration.text;
+      }
+    }
+  });
+}
+
+// === تحريك سيارة السائق تقترب ===
+function startDriverApproachAnimation(targetLatLng) {
+  clearInterval(pDriverAnimInterval);
+  if (pDriverMarker) pDriverMarker.setMap(null);
+
+  // موقع بداية وهمية قريبة
+  const startLat = targetLatLng.lat + 0.008;
+  const startLng = targetLatLng.lng - 0.006;
+  let step = 0;
+  const steps = 60;
+
+  pDriverMarker = new google.maps.Marker({
+    position: { lat: startLat, lng: startLng },
+    map: pMap,
+    icon: {
+      url: 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42">
+          <circle cx="21" cy="21" r="20" fill="white" stroke="#ddd" stroke-width="1.5"/>
+          <text x="21" y="28" font-size="22" text-anchor="middle">🚗</text>
+        </svg>`),
+      anchor: new google.maps.Point(21, 21),
+      scaledSize: new google.maps.Size(42, 42)
+    },
+    title: 'السائق'
+  });
+
+  pDriverAnimInterval = setInterval(() => {
+    step++;
+    const t   = step / steps;
+    const lat = startLat + (targetLatLng.lat - startLat) * t;
+    const lng = startLng + (targetLatLng.lng - startLng) * t;
+    pDriverMarker.setPosition({ lat, lng });
+    if (step >= steps) clearInterval(pDriverAnimInterval);
+  }, 100);
+}
+
+// === مسح خريطة الراكب (بعد انتهاء الرحلة) ===
+function clearPassengerMap() {
+  clearInterval(pDriverAnimInterval);
+  [pPickupMarker, pDropoffMarker, pDriverMarker].forEach(m => { if (m) m.setMap(null); });
+  pPickupMarker = pDropoffMarker = pDriverMarker = null;
+  pPickupLatLng = pDropoffLatLng = null;
+  pDirectionsRenderer.setDirections({ routes: [] });
+  if (pUserLatLng) { pMap.setCenter(pUserLatLng); pMap.setZoom(15); }
+  else { pMap.setCenter(RIYADH); pMap.setZoom(14); }
+}
+
+// === إعادة توسيط الخريطة ===
+function centerMap() {
+  if (pMap) {
+    if (pUserLatLng) { pMap.panTo(pUserLatLng); pMap.setZoom(15); }
+    else { pMap.panTo(RIYADH); pMap.setZoom(14); }
+  }
+}
+
+// === إعداد بحث الأماكن للحقول ===
+function setupPassengerPlacesSearch() {
+  // البحث عن حقول الإدخال بأسمائها
+  const inputs = document.querySelectorAll('input[placeholder*="من"], input[placeholder*="إلى"], input[placeholder*="pickup"], input[placeholder*="dropoff"], .route-input input, .location-input');
+  if (!inputs.length) {
+    // بحث بديل
+    setupSearchForAllTextInputs();
+    return;
+  }
+
+  inputs.forEach((inp, i) => {
+    const ac = new google.maps.places.Autocomplete(inp, {
+      componentRestrictions: { country: 'SA' },
+      fields: ['geometry', 'name', 'formatted_address']
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (!place.geometry) return;
+      const latLng = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng()
+      };
+      if (i === 0) setPassengerPickup(latLng, place.name);
+      else         setPassengerDropoff(latLng, place.name);
+    });
+  });
+}
+
+function setupSearchForAllTextInputs() {
+  // ابحث عن حقول search-box في الـ bottom sheet
+  const boxes = document.querySelectorAll('.search-box input, .from-input, .to-input, [id*="from"], [id*="to"], [id*="pickup"], [id*="dropoff"], [id*="dest"]');
+  boxes.forEach((inp, i) => {
+    try {
+      const ac = new google.maps.places.Autocomplete(inp, {
+        componentRestrictions: { country: 'SA' },
+        fields: ['geometry', 'name']
+      });
+      ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        if (!place.geometry) return;
+        const latLng = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        };
+        if (i === 0) setPassengerPickup(latLng, place.name);
+        else         setPassengerDropoff(latLng, place.name);
+      });
+    } catch(e) {}
+  });
+}
+
+// === ربط دوال الحجز بالخريطة ===
+// Override startSearch to also animate driver on map
+const _origStartSearch = window.startSearch;
+window.startSearch = function() {
+  if (pPickupLatLng) {
+    setTimeout(() => startDriverApproachAnimation(pPickupLatLng), 3000);
+  }
+  if (_origStartSearch) _origStartSearch.apply(this, arguments);
+};
+
+// Override cancelTrip to clear map
+const _origCancelTrip = window.cancelTrip;
+window.cancelTrip = function() {
+  clearPassengerMap();
+  if (_origCancelTrip) _origCancelTrip.apply(this, arguments);
+};
+</script>
+
+<!-- ==================== WORLD-CLASS MODALS ==================== -->
+
+<!-- SOS EMERGENCY MODAL -->
+<div id="sosModal" style="display:none;position:fixed;inset:0;background:rgba(231,76,60,0.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;">
+  <div style="font-size:80px;animation:sosPulse 1s infinite;">🆘</div>
+  <div style="font-size:26px;font-weight:900;color:#fff;margin:16px 0 8px;">طوارئ SOS</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.85);margin-bottom:28px;line-height:1.6;">سيتم إرسال موقعك الحالي<br>ومعلومات رحلتك للجهات المختصة</div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;">
+    <button onclick="callEmergency('911')" style="padding:16px;background:#fff;color:#e74c3c;border:none;border-radius:14px;font-family:Cairo,sans-serif;font-size:18px;font-weight:900;cursor:pointer;">📞 اتصال بـ 911</button>
+    <button onclick="callEmergency('993')" style="padding:16px;background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:14px;font-family:Cairo,sans-serif;font-size:16px;font-weight:800;cursor:pointer;">🚔 الشرطة 993</button>
+    <button onclick="shareSafetyLocation()" style="padding:14px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:12px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">📍 مشاركة الموقع مع جهة الاتصال</button>
+    <button onclick="document.getElementById('sosModal').style.display='none'" style="padding:12px;background:none;color:rgba(255,255,255,.7);border:none;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;">✕ إغلاق</button>
+  </div>
+</div>
+
+<!-- SPLIT FARE MODAL -->
+<div id="splitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:430px;">
+    <div style="font-size:18px;font-weight:900;margin-bottom:6px;">💰 تقسيم الأجرة</div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:18px;">شارك الأجرة مع أصدقائك</div>
+    <div id="splitFareAmount" style="font-size:28px;font-weight:900;text-align:center;margin-bottom:16px;">٢٢ ر.س</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px;">
+      <button onclick="changeSplit(-1)" style="width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);font-size:20px;cursor:pointer;">−</button>
+      <div style="text-align:center;"><div id="splitCount" style="font-size:32px;font-weight:900;">2</div><div style="font-size:11px;color:var(--text-secondary);">أشخاص</div></div>
+      <button onclick="changeSplit(1)" style="width:40px;height:40px;border-radius:50%;background:#000;color:#fff;border:none;font-size:20px;cursor:pointer;">+</button>
+    </div>
+    <div id="splitPerPerson" style="text-align:center;font-size:20px;font-weight:800;color:#276ef1;margin-bottom:20px;">١١ ر.س لكل شخص</div>
+    <button onclick="shareSplitFare()" style="width:100%;padding:14px;background:#000;color:#fff;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;">📤 مشاركة طلب التقسيم</button>
+    <button onclick="document.getElementById('splitModal').style.display='none'" style="width:100%;padding:12px;background:none;border:none;font-family:Cairo,sans-serif;font-size:13px;color:var(--text-secondary);cursor:pointer;">إغلاق</button>
+  </div>
+</div>
+
+<!-- SCHEDULE PICKER MODAL -->
+<div id="scheduleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:430px;">
+    <div style="font-size:18px;font-weight:900;margin-bottom:16px;">📅 جدولة رحلة</div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">التاريخ</div>
+      <input type="date" id="schedDate" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:Cairo,sans-serif;font-size:14px;outline:none;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">الوقت</div>
+      <input type="time" id="schedTime" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:Cairo,sans-serif;font-size:14px;outline:none;">
+    </div>
+    <button onclick="confirmSchedule()" style="width:100%;padding:14px;background:#000;color:#fff;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;">✅ تأكيد الجدولة</button>
+    <button onclick="document.getElementById('scheduleModal').style.display='none'" style="width:100%;padding:12px;background:none;border:none;font-family:Cairo,sans-serif;font-size:13px;color:var(--text-secondary);cursor:pointer;">إلغاء</button>
+  </div>
+</div>
+
+<!-- TRIP RECEIPT MODAL -->
+<div id="receiptModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:48px;margin-bottom:8px;">🧾</div>
+      <div style="font-size:20px;font-weight:900;">إيصال الرحلة</div>
+      <div id="rcptId" style="font-size:11px;color:var(--text-secondary);margin-top:4px;"></div>
+    </div>
+    <div style="background:var(--surface);border-radius:14px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-secondary);">الأجرة الأساسية</span><span style="font-size:13px;font-weight:700;" id="rcptBase">--</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-secondary);">رسوم الكيلومترات</span><span style="font-size:13px;font-weight:700;" id="rcptKm">--</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-secondary);">خصم الرمز الترويجي</span><span style="font-size:13px;font-weight:700;color:var(--green);" id="rcptDiscount">٠ ر.س</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="font-size:15px;font-weight:900;">الإجمالي</span><span style="font-size:18px;font-weight:900;" id="rcptTotal">--</span></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;background:var(--surface);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">المسافة</div>
+        <div style="font-size:16px;font-weight:800;" id="rcptDist">--</div>
+      </div>
+      <div style="flex:1;background:var(--surface);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">المدة</div>
+        <div style="font-size:16px;font-weight:800;" id="rcptTime">--</div>
+      </div>
+      <div style="flex:1;background:var(--surface);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">السائق</div>
+        <div style="font-size:14px;font-weight:800;">⭐ 4.9</div>
+      </div>
+    </div>
+    <button onclick="shareReceipt()" style="width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">📤 مشاركة الإيصال</button>
+    <button onclick="document.getElementById('receiptModal').style.display='none'" style="width:100%;padding:13px;background:#000;color:#fff;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:800;cursor:pointer;">✅ إغلاق</button>
+  </div>
+</div>
+
+<style>
+@keyframes sosPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+.sos-btn-active { animation: sosPulse 1.5s infinite !important; }
+</style>
+
+<script>
+// ========== WORLD-CLASS FEATURES ==========
+
+// ----- PROMO CODES -----
+var PROMO_CODES = { 'SNAD10': 10, 'SNAD20': 20, 'FIRST50': 50, 'WELCOME': 15 };
+var appliedPromo = null;
+var promoDiscount = 0;
+
+function applyPromo() {
+  var code = document.getElementById('promoInput').value.trim().toUpperCase();
+  var msgEl = document.getElementById('promoMsg');
+  if (!code) { return; }
+  if (PROMO_CODES[code]) {
+    promoDiscount = PROMO_CODES[code];
+    appliedPromo = code;
+    msgEl.textContent = '🎉 تم تطبيق رمز ' + code + ' — خصم ' + promoDiscount + ' ر.س!';
+    msgEl.style.background = '#f0fff0';
+    msgEl.style.color = '#008000';
+    msgEl.style.border = '1px solid #b2d8b2';
+    msgEl.style.display = 'block';
+    document.getElementById('promoInput').style.borderColor = '#008000';
+    // حدث GA4: استخدام رمز ترويجي
+    if (window.gtag) gtag('event', 'promo_applied', { coupon: code, discount: promoDiscount, currency: 'SAR' });
+    updateFareDisplay();
+  } else {
+    appliedPromo = null; promoDiscount = 0;
+    msgEl.textContent = '❌ رمز الخصم غير صحيح';
+    msgEl.style.background = '#fff0f0';
+    msgEl.style.color = '#c0392b';
+    msgEl.style.border = '1px solid #f0b0b0';
+    msgEl.style.display = 'block';
+    document.getElementById('promoInput').style.borderColor = '#e74c3c';
+  }
+}
+
+function updateFareDisplay() {
+  var baseV = parseFloat(document.getElementById('fareVal').textContent.replace(/[٠-٩]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); })) || 22;
+  var final = Math.max(12, baseV - promoDiscount);
+  document.getElementById('fareVal').textContent = final;
+  if (promoDiscount > 0) {
+    document.getElementById('fareBreakdown').textContent = 'بعد خصم ' + promoDiscount + ' ر.س (رمز: ' + appliedPromo + ')';
+    document.getElementById('fareBreakdown').style.color = '#008000';
+  }
+}
+
+// ----- SOS -----
+function openSOS() {
+  var m = document.getElementById('sosModal');
+  m.style.display = 'flex';
+  if (navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+function callEmergency(num) {
+  window.location.href = 'tel:' + num;
+}
+
+function shareSafetyLocation() {
+  var msg = 'أنا في رحلة مع تطبيق سند. موقعي: ' + (window.currentAddress || 'الرياض، المملكة العربية السعودية') + ' — رقم الرحلة: ' + (window.currentTripId || 'TRIP-' + Date.now());
+  if (navigator.share) {
+    navigator.share({ title:'موقعي الآن — سند', text: msg }).catch(function(){});
+  } else {
+    navigator.clipboard && navigator.clipboard.writeText(msg);
+    alert('تم نسخ معلومات موقعك');
+  }
+}
+
+// ----- SHARE TRIP -----
+function shareTripLive() {
+  var msg = '🚗 أنا في رحلة مع تطبيق سند\n📍 من: ' + (document.getElementById('pickupTxt') ? document.getElementById('pickupTxt').textContent : '--') + '\n📍 إلى: ' + (document.getElementById('dropoffTxt') ? document.getElementById('dropoffTxt').textContent : '--') + '\n⏱️ الوصول المتوقع: ' + (document.getElementById('etaNum') ? document.getElementById('etaNum').textContent : '--');
+  if (navigator.share) {
+    navigator.share({ title: 'رحلتي مع سند', text: msg }).catch(function(){});
+  } else {
+    navigator.clipboard && navigator.clipboard.writeText(msg).then(function(){ alert('تم نسخ تفاصيل الرحلة'); }).catch(function(){ alert(msg); });
+  }
+}
+
+// ----- SPLIT FARE -----
+var splitCount = 2;
+function openSplitFare() {
+  var fareNum = parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22;
+  document.getElementById('splitFareAmount').textContent = fareNum + ' ر.س';
+  splitCount = 2;
+  updateSplitDisplay(fareNum);
+  document.getElementById('splitModal').style.display = 'flex';
+}
+function changeSplit(delta) {
+  splitCount = Math.max(2, Math.min(8, splitCount + delta));
+  var fareNum = parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22;
+  updateSplitDisplay(fareNum);
+}
+function updateSplitDisplay(fareNum) {
+  document.getElementById('splitCount').textContent = splitCount;
+  document.getElementById('splitPerPerson').textContent = (fareNum/splitCount).toFixed(1) + ' ر.س لكل شخص';
+}
+function shareSplitFare() {
+  var fareNum = parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22;
+  var perP = (fareNum/splitCount).toFixed(1);
+  var msg = '💰 طلب تقسيم الأجرة من تطبيق سند\nالإجمالي: ' + fareNum + ' ر.س\nنصيبك: ' + perP + ' ر.س';
+  navigator.share ? navigator.share({title:'تقسيم الأجرة',text:msg}).catch(function(){}) : alert(msg);
+  document.getElementById('splitModal').style.display = 'none';
+}
+
+// ----- SCHEDULED RIDE -----
+var isScheduled = false;
+function toggleSchedule() {
+  isScheduled = !isScheduled;
+  var btn = document.getElementById('scheduleBtn');
+  var timeBtn = document.getElementById('scheduleTimeBtn');
+  if (isScheduled) {
+    btn.textContent = '⏰ مجدولة';
+    btn.style.background = '#000';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#000';
+    timeBtn.style.display = 'block';
+  } else {
+    btn.textContent = '⏰ الآن';
+    btn.style.background = 'var(--surface)';
+    btn.style.color = 'var(--text-secondary)';
+    btn.style.borderColor = 'var(--border)';
+    timeBtn.style.display = 'none';
+  }
+}
+function openSchedulePicker() {
+  var now = new Date();
+  document.getElementById('schedDate').value = now.toISOString().split('T')[0];
+  document.getElementById('schedTime').value = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('scheduleModal').style.display = 'flex';
+}
+function confirmSchedule() {
+  var d = document.getElementById('schedDate').value;
+  var t = document.getElementById('schedTime').value;
+  if (!d || !t) { alert('اختر التاريخ والوقت'); return; }
+  document.getElementById('scheduleTimeBtn').textContent = '📅 ' + d.split('-').reverse().join('/') + ' ' + t;
+  document.getElementById('scheduleModal').style.display = 'none';
+  document.getElementById('requestBtn').textContent = '📅 جدولة الرحلة';
+  alert('✅ تم جدولة رحلتك ليوم ' + d + ' في تمام ' + t);
+}
+
+// ----- TRIP RECEIPT -----
+var currentDiscount = 0;
+function showTripReceipt(fareTotal) {
+  var base = Math.round(fareTotal * 0.55);
+  var km   = Math.round(fareTotal * 0.35);
+  var disc = promoDiscount || 0;
+  document.getElementById('rcptId').textContent   = 'رقم الرحلة: TRIP-' + Date.now().toString().slice(-6);
+  document.getElementById('rcptBase').textContent = base + ' ر.س';
+  document.getElementById('rcptKm').textContent   = km + ' ر.س';
+  document.getElementById('rcptDiscount').textContent = disc > 0 ? ('−' + disc + ' ر.س') : '٠ ر.س';
+  document.getElementById('rcptTotal').textContent = Math.max(12, fareTotal - disc) + ' ر.س';
+  document.getElementById('rcptDist').textContent  = (Math.random()*10+2).toFixed(1) + ' كم';
+  document.getElementById('rcptTime').textContent  = Math.floor(Math.random()*20+8) + ' د';
+  document.getElementById('receiptModal').style.display = 'flex';
+  // Reset promo
+  appliedPromo = null; promoDiscount = 0;
+}
+function shareReceipt() {
+  var msg = '🧾 إيصال رحلة سند\n' + document.getElementById('rcptId').textContent + '\nالإجمالي: ' + document.getElementById('rcptTotal').textContent;
+  navigator.share ? navigator.share({title:'إيصال سند',text:msg}).catch(function(){}) : alert(msg);
+}
+
+// ----- HOOK: Show receipt after rating submission -----
+var _origSubmitRating = window.submitRating;
+window.submitRating = function() {
+  var fare = parseFloat(document.getElementById('fareVal') ? document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'') : 22) || 22;
+  if (_origSubmitRating) _origSubmitRating.apply(this, arguments);
+  setTimeout(function() { showTripReceipt(fare); }, 800);
+};
+
+// ----- LOAD PROMOS FROM SERVER -----
+fetch('/api/v1/admin/settings').then(function(r){return r.json();}).then(function(res){
+  if (res.data && res.data.promoCodes) {
+    Object.assign(PROMO_CODES, res.data.promoCodes);
+  }
+}).catch(function(){});
+
+// ----- SURGE DISPLAY -----
+fetch('/api/v1/config').then(function(r){return r.json();}).then(function(res){
+  if (res.config && res.config.surgeEnabled && res.config.surgeMultiplier > 1) {
+    var tag = document.getElementById('surgeTag');
+    if (tag) { tag.textContent = '⚡ ذروة ×' + res.config.surgeMultiplier; tag.style.display = 'block'; }
+  }
+}).catch(function(){});
+</script>
+
+<!-- تحميل Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc&libraries=places,geometry&language=ar&region=SA&callback=initPassengerMap" async defer></script>
+
+</body>
+
+</html>
