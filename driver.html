@@ -23,6 +23,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="js/firebase-init.js"></script>
+  <!-- Smart Notifications SDK -->
+  <script src="js/smart-notifications.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
@@ -2800,6 +2802,66 @@ window.acceptTrip = function() {
   if (_origAcceptTrip) _origAcceptTrip.apply(this, arguments);
   setTimeout(animateDriverToPickup, 500);
 };
+</script>
+
+<!-- تهيئة نظام الإشعارات الذكية للسائق -->
+<script>
+(function initDriverSmartNotifications() {
+  // معرّف سائق فريد محفوظ محلياً
+  var driverId = localStorage.getItem('snad_driver_id');
+  if (!driverId) {
+    driverId = 'DRV_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    localStorage.setItem('snad_driver_id', driverId);
+  }
+
+  // تهيئة SDK
+  setTimeout(function() {
+    if (window.SnadSmartNotif) {
+      window.SnadSmartNotif.init(driverId, 'driver').then(function() {
+        console.log('[SmartNotif Driver] تم التسجيل في نظام الإشعارات ✅');
+      }).catch(function() {});
+    }
+  }, 2000);
+
+  // ربط toggleOnline بنظام الإشعارات
+  var _origToggle = window.toggleOnline;
+  window.toggleOnline = function() {
+    var wasOnline = window.isOnline || false;
+    if (typeof _origToggle === 'function') _origToggle();
+    var nowOnline = window.isOnline || false;
+    
+    if (window.SnadSmartNotif) {
+      if (!wasOnline && nowOnline) {
+        // السائق اتصل
+        window.SnadSmartNotif.reportActivity('online', { isOnline: true });
+      } else if (wasOnline && !nowOnline) {
+        // السائق انقطع
+        window.SnadSmartNotif.reportActivity('offline', { isOnline: false });
+      }
+    }
+  };
+
+  // إشعار الترحيب عند فتح التطبيق
+  setTimeout(function() {
+    var lastOpen = localStorage.getItem('snad_driver_last_open');
+    var now = Date.now();
+    var oneDay = 24 * 60 * 60 * 1000;
+    
+    if (!lastOpen || now - parseInt(lastOpen) > oneDay) {
+      if (window.SnadSmartNotif && Notification.permission === 'granted') {
+        var hour = new Date().getHours();
+        var greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'مساء الخير' : 'مساء النور';
+        window.SnadSmartNotif.showLocal(
+          '🚗 ' + greeting + ' يا سائق سند!',
+          'جاهز لاستقبال الطلبات؟ اضغط اتصال وابدأ يومك 💪',
+          { tag: 'daily_greeting', requireInteraction: true }
+        );
+      }
+      localStorage.setItem('snad_driver_last_open', now.toString());
+    }
+  }, 3000);
+
+})();
 </script>
 
 <!-- تحميل Google Maps API للسائق -->

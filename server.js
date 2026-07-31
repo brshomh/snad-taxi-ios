@@ -376,11 +376,238 @@ app.get('/payment-success.html', (req, res) => {
 </html>`);
 });
 
+
+// ===================================================
+// 🧠 محرك الذكاء الاصطناعي للإشعارات والعروض الذكية
+// AI Smart Notification & Offers Engine
+// ===================================================
+
+// قاعدة بيانات مؤقتة في الذاكرة (تُستبدل بـ Firebase في الإنتاج)
+const smartDB = {
+  drivers: {},    // { driverId: { lastTrip, totalTrips, location, fcmToken, isOnline } }
+  passengers: {}, // { passengerId: { lastTrip, totalTrips, cancelledTrips, fcmToken } }
+  sentNotifications: [], // سجل الإشعارات المُرسلة
+  offers: []             // العروض النشطة
+};
+
+// ===== تسجيل FCM Token للجهاز =====
+app.post('/api/smart/register', (req, res) => {
+  const { userId, role, fcmToken, location } = req.body;
+  if (!userId || !fcmToken) return res.status(400).json({ error: 'userId و fcmToken مطلوبان' });
+
+  if (role === 'driver') {
+    smartDB.drivers[userId] = { ...(smartDB.drivers[userId] || {}), fcmToken, location, lastSeen: Date.now() };
+  } else {
+    smartDB.passengers[userId] = { ...(smartDB.passengers[userId] || {}), fcmToken, lastSeen: Date.now() };
+  }
+  res.json({ success: true, message: `تم تسجيل ${userId} في نظام الإشعارات` });
+});
+
+// ===== تحديث نشاط السائق =====
+app.post('/api/smart/driver-activity', (req, res) => {
+  const { driverId, isOnline, tripCompleted, location } = req.body;
+  if (!driverId) return res.status(400).json({ error: 'driverId مطلوب' });
+
+  smartDB.drivers[driverId] = smartDB.drivers[driverId] || {};
+  const d = smartDB.drivers[driverId];
+
+  if (tripCompleted) {
+    d.lastTrip = Date.now();
+    d.totalTrips = (d.totalTrips || 0) + 1;
+  }
+  if (isOnline !== undefined) d.isOnline = isOnline;
+  if (location) d.location = location;
+  d.lastSeen = Date.now();
+
+  res.json({ success: true });
+});
+
+// ===== تحديث نشاط الراكب =====
+app.post('/api/smart/passenger-activity', (req, res) => {
+  const { passengerId, action } = req.body; // action: 'request', 'cancel', 'complete'
+  if (!passengerId) return res.status(400).json({ error: 'passengerId مطلوب' });
+
+  smartDB.passengers[passengerId] = smartDB.passengers[passengerId] || {};
+  const p = smartDB.passengers[passengerId];
+
+  if (action === 'request') p.lastRequest = Date.now();
+  if (action === 'cancel') {
+    p.cancelledTrips = (p.cancelledTrips || 0) + 1;
+    p.lastCancel = Date.now();
+  }
+  if (action === 'complete') {
+    p.totalTrips = (p.totalTrips || 0) + 1;
+    p.lastTrip = Date.now();
+  }
+
+  res.json({ success: true });
+});
+
+// ===== إرسال إشعار مخصص يدوياً (من لوحة التحكم) =====
+app.post('/api/smart/send-notification', async (req, res) => {
+  const { target, title, body, offer } = req.body;
+  // target: 'all_drivers' | 'all_passengers' | 'all' | userId
+
+  let tokens = [];
+
+  if (target === 'all_drivers' || target === 'all') {
+    tokens.push(...Object.values(smartDB.drivers).map(d => d.fcmToken).filter(Boolean));
+  }
+  if (target === 'all_passengers' || target === 'all') {
+    tokens.push(...Object.values(smartDB.passengers).map(p => p.fcmToken).filter(Boolean));
+  }
+  if (target && target !== 'all' && target !== 'all_drivers' && target !== 'all_passengers') {
+    const driver = smartDB.drivers[target];
+    const passenger = smartDB.passengers[target];
+    if (driver?.fcmToken) tokens.push(driver.fcmToken);
+    if (passenger?.fcmToken) tokens.push(passenger.fcmToken);
+  }
+
+  // تسجيل الإشعار
+  const notification = { target, title, body, offer, sentAt: Date.now(), tokens: tokens.length };
+  smartDB.sentNotifications.push(notification);
+
+  // في الإنتاج: إرسال عبر FCM API
+  // await sendFCMNotification(tokens, title, body);
+
+  res.json({ success: true, tokensTargeted: tokens.length, notification });
+});
+
+// ===== جلب إحصائيات لوحة التحكم الذكية =====
+app.get('/api/smart/stats', (req, res) => {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+
+  const activeDrivers = Object.values(smartDB.drivers).filter(d => d.isOnline).length;
+  const inactiveDrivers = Object.values(smartDB.drivers).filter(d => !d.isOnline && d.lastSeen && now - d.lastSeen < 2 * oneHour).length;
+  const recentCancels = Object.values(smartDB.passengers).filter(p => p.lastCancel && now - p.lastCancel < oneHour).length;
+
+  res.json({
+    totalDrivers: Object.keys(smartDB.drivers).length,
+    activeDrivers,
+    inactiveDrivers,
+    totalPassengers: Object.keys(smartDB.passengers).length,
+    recentCancels,
+    sentNotifications: smartDB.sentNotifications.length,
+    activeOffers: smartDB.offers.filter(o => o.expiresAt > now).length,
+    lastActivity: new Date().toLocaleString('ar-SA')
+  });
+});
+
+// ===== إدارة العروض =====
+app.post('/api/smart/offers', (req, res) => {
+  const { title, discount, target, durationMinutes } = req.body;
+  const offer = {
+    id: 'OFFER_' + Date.now(),
+    title,
+    discount,
+    target,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + (durationMinutes || 60) * 60 * 1000
+  };
+  smartDB.offers.push(offer);
+  res.json({ success: true, offer });
+});
+
+app.get('/api/smart/offers/active', (req, res) => {
+  const now = Date.now();
+  res.json({ offers: smartDB.offers.filter(o => o.expiresAt > now) });
+});
+
+// ===== المحرك الذكي التلقائي (يعمل كل دقيقة) =====
+const SMART_ENGINE_INTERVAL = 60 * 1000; // كل دقيقة
+
+setInterval(() => {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+  const twoHours = 2 * oneHour;
+
+  // --- تحليل السائقين ---
+  Object.entries(smartDB.drivers).forEach(([driverId, driver]) => {
+    if (!driver.fcmToken) return;
+
+    // سائق متصل لأكثر من ساعة بدون رحلة → اقترح منطقة مزدحمة
+    if (driver.isOnline && driver.lastTrip && now - driver.lastTrip > twoHours) {
+      const suggestion = analyzeHotZone();
+      const notification = {
+        target: driverId,
+        title: '📍 منطقة مزدحمة قريبة منك!',
+        body: `الطلب مرتفع في ${suggestion}. توجه الآن لزيادة أرباحك 🚗`,
+        sentAt: now,
+        auto: true
+      };
+      smartDB.sentNotifications.push(notification);
+      console.log(`[AI Engine] 📳 إشعار للسائق ${driverId}: ${notification.body}`);
+    }
+
+    // ساعات الذروة → إشعار ارتفاع الأجرة
+    const hour = new Date().getHours();
+    if ((hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 18)) {
+      if (!driver.peakNotifiedAt || now - driver.peakNotifiedAt > oneHour) {
+        const notification = {
+          target: driverId,
+          title: '⚡ وقت الذروة - الأجرة أعلى!',
+          body: 'الطلب مرتفع الآن، الأجرة أعلى بـ30% في هذه الساعة 💰',
+          sentAt: now,
+          auto: true
+        };
+        smartDB.sentNotifications.push(notification);
+        driver.peakNotifiedAt = now;
+        console.log(`[AI Engine] ⚡ إشعار ذروة للسائق ${driverId}`);
+      }
+    }
+  });
+
+  // --- تحليل الركاب ---
+  Object.entries(smartDB.passengers).forEach(([passengerId, passenger]) => {
+    if (!passenger.fcmToken) return;
+
+    // راكب ألغى طلباً في آخر ساعة → عرض خصم
+    if (passenger.lastCancel && now - passenger.lastCancel < oneHour && !passenger.cancelOfferSent) {
+      const notification = {
+        target: passengerId,
+        title: '🎁 عرض خاص لك!',
+        body: 'نلاحظ أنك أنهيت طلبك مبكراً. اطلب الآن واحصل على خصم 15% 🎉',
+        sentAt: now,
+        auto: true,
+        offer: { discount: 15, expiresInMinutes: 15 }
+      };
+      smartDB.sentNotifications.push(notification);
+      passenger.cancelOfferSent = true;
+      setTimeout(() => { passenger.cancelOfferSent = false; }, 60 * 60 * 1000);
+      console.log(`[AI Engine] 🎁 عرض استرداد للراكب ${passengerId}`);
+    }
+  });
+
+}, SMART_ENGINE_INTERVAL);
+
+// دالة مساعدة لتحليل أكثر المناطق ازدحاماً (محاكاة ذكية)
+function analyzeHotZone() {
+  const zones = ['حي الملز', 'العليا', 'الملقا', 'الروضة', 'الوزارات', 'المطار', 'العمارية'];
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour <= 9) return 'محيط المطار والوزارات';
+  if (hour >= 12 && hour <= 14) return 'مراكز التسوق والمطاعم';
+  if (hour >= 16 && hour <= 19) return 'الأحياء السكنية والمجمعات';
+  return zones[Math.floor(Math.random() * zones.length)];
+}
+
+console.log('🧠 [AI Engine] تم تشغيل محرك الذكاء الاصطناعي للإشعارات الذكية');
+
+// ===================================================
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log('');
   console.log('🚗 ====================================');
   console.log('   خادم سند تاكسي + PayTabs يعمل!');
+  console.log(`   http://localhost:${PORT}`);
+  console.log('🧠 محرك الذكاء الاصطناعي: نشط');
+  console.log('🚗 ====================================');
+  console.log('');
+  console.log('📌 افتح التطبيق على: http://localhost:3000/passenger.html');
+  console.log('');
+});
+
   console.log(`   http://localhost:${PORT}`);
   console.log('🚗 ====================================');
   console.log('');

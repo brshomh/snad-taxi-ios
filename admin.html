@@ -1112,4 +1112,71 @@ function initAdmin() {
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc&language=ar&region=SA&callback=initAdmin" async defer></script>
 </body>
+<script>
+// ===== قسم الإشعارات والعروض الذكية في لوحة التحكم =====
+function loadSmartStats() {
+  fetch('/api/smart/stats').then(r => r.json()).then(data => {
+    const el = document.getElementById('smartStatsPanel');
+    if (!el) return;
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px">
+        <div class="stat-mini" style="background:#1a1a2e;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#4fc3f7">${data.activeDrivers}</div>
+          <div style="font-size:11px;color:#aaa">سائق متصل</div>
+        </div>
+        <div class="stat-mini" style="background:#1a1a2e;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#a5d6a7">${data.totalPassengers}</div>
+          <div style="font-size:11px;color:#aaa">راكب مسجل</div>
+        </div>
+        <div class="stat-mini" style="background:#1a1a2e;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#ffcc02">${data.sentNotifications}</div>
+          <div style="font-size:11px;color:#aaa">إشعار أُرسل</div>
+        </div>
+        <div class="stat-mini" style="background:#1a1a2e;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#ef9a9a">${data.recentCancels}</div>
+          <div style="font-size:11px;color:#aaa">إلغاء مؤخراً</div>
+        </div>
+      </div>`;
+  }).catch(() => {});
+}
+
+function sendSmartNotification() {
+  const target = document.getElementById('notifTarget').value;
+  const title = document.getElementById('notifTitle').value.trim();
+  const body = document.getElementById('notifBody').value.trim();
+  if (!title || !body) { toast('أدخل العنوان والرسالة', '#e74c3c'); return; }
+
+  fetch('/api/smart/send-notification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target, title, body })
+  }).then(r => r.json()).then(res => {
+    toast('✅ تم إرسال الإشعار لـ ' + res.tokensTargeted + ' مستخدم', '#00c853');
+    loadSmartStats();
+  }).catch(() => toast('خطأ في الإرسال', '#e74c3c'));
+}
+
+function createSmartOffer() {
+  const title = document.getElementById('offerTitle').value.trim();
+  const discount = parseInt(document.getElementById('offerDiscount').value) || 10;
+  const target = document.getElementById('offerTarget').value;
+  const duration = parseInt(document.getElementById('offerDuration').value) || 60;
+
+  if (!title) { toast('أدخل عنوان العرض', '#e74c3c'); return; }
+
+  fetch('/api/smart/offers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, discount, target, durationMinutes: duration })
+  }).then(r => r.json()).then(res => {
+    toast('🎁 تم إنشاء العرض: ' + res.offer.id, '#00c853');
+    document.getElementById('notifTitle').value = '🎁 عرض خاص: ' + title;
+    document.getElementById('notifBody').value = `احصل على خصم ${discount}% - العرض ينتهي خلال ${duration} دقيقة!`;
+  });
+}
+
+// تحميل الإحصائيات تلقائياً كل 30 ثانية
+setInterval(loadSmartStats, 30000);
+setTimeout(loadSmartStats, 3000);
+</script>
 </html>

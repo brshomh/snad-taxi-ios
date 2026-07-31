@@ -24,6 +24,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="js/firebase-init.js"></script>
+<!-- Smart Notifications SDK -->
+<script src="js/smart-notifications.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
@@ -3903,6 +3905,44 @@ fetch('/api/v1/config').then(function(r){return r.json();}).then(function(res){
     if (tag) { tag.textContent = '⚡ ذروة ×' + res.config.surgeMultiplier; tag.style.display = 'block'; }
   }
 }).catch(function(){});
+</script>
+
+<!-- تهيئة نظام الإشعارات الذكية -->
+<script>
+(function initSmartNotifications() {
+  // معرّف مستخدم فريد محفوظ محلياً
+  var userId = localStorage.getItem('snad_passenger_id');
+  if (!userId) {
+    userId = 'PASS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    localStorage.setItem('snad_passenger_id', userId);
+  }
+
+  // تهيئة SDK بعد ثانيتين من تحميل الصفحة
+  setTimeout(function() {
+    if (window.SnadSmartNotif) {
+      window.SnadSmartNotif.init(userId, 'passenger');
+    }
+  }, 2000);
+
+  // ربط زر الإلغاء بنظام الإشعارات الذكية
+  var origCancelSearch = window.cancelSearch;
+  window.cancelSearch = function() {
+    if (typeof origCancelSearch === 'function') origCancelSearch();
+    localStorage.setItem('snad_last_cancel_' + userId, Date.now().toString());
+    if (window.SnadSmartNotif) {
+      window.SnadSmartNotif.reportActivity('cancel');
+    }
+  };
+
+  // الإبلاغ عن طلب جديد
+  var origStartSearch = window.startSearch;
+  window.startSearch = function() {
+    if (window.SnadSmartNotif) {
+      window.SnadSmartNotif.reportActivity('request');
+    }
+    if (typeof origStartSearch === 'function') origStartSearch();
+  };
+})();
 </script>
 
 <!-- تحميل Google Maps API -->
