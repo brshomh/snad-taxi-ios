@@ -1680,41 +1680,83 @@
       </div>
 
       <!-- ACTIVE TRIP OVERLAY -->
+      <!-- ===== شاشة تتبع السائق - مستوى Uber ===== -->
       <div class="overlay-dark" id="tripOverlay">
-        <div class="trip-sheet animate-in">
+        <div class="uber-driver-sheet animate-in" id="tripSheetCard">
 
-          <div class="driver-card-row">
-            <div class="driver-ava">👨‍✈️</div>
-            <div>
-              <div class="driver-name-txt">محمد السعيد</div>
-              <div class="driver-plate-txt">أ ب ج ٢٣٤٥</div>
+          <!-- وقت الوصول - كبير واحترافي -->
+          <div class="uber-eta-header">
+            <div class="uber-eta-label">وقت الوصول المتوقع</div>
+            <div class="uber-eta-row">
+              <span class="uber-eta-num" id="etaMinutes">٥</span>
+              <span class="uber-eta-unit">دقيقة</span>
             </div>
-            <div class="driver-rating-txt">⭐ ٤.٩</div>
+            <!-- شريط التقدم المتحرك -->
+            <div class="uber-eta-track">
+              <div class="uber-eta-fill" id="etaProgressBar"></div>
+              <!-- أيقونة السيارة المتحركة على الشريط -->
+              <div class="uber-car-on-track" id="carOnTrack">🚗</div>
+            </div>
+            <div class="uber-eta-status" id="driverDistanceText">السائق على بُعد ١.٢ كم منك</div>
           </div>
 
-          <div class="eta-bar">
-            <div class="eta-icon">🚗</div>
-            <div class="eta-text" id="tripStatusMsg">السائق في طريقه إليك</div>
-            <div class="eta-time" id="etaNum">٥ د</div>
+          <!-- بطاقة بيانات السائق -->
+          <div class="uber-driver-card">
+            <div class="uber-driver-photo-wrap">
+              <img src="assets/logo-driver.jpg" id="driverPhotoImg" class="uber-driver-photo"
+                onerror="this.style.display='none';document.getElementById('driverAvatarFallback').style.display='flex'">
+              <div class="uber-driver-photo-fallback" id="driverAvatarFallback">👨‍✈️</div>
+              <div class="uber-driver-verified">✓</div>
+            </div>
+            <div class="uber-driver-info">
+              <div class="uber-driver-name" id="driverNameDisplay">محمد السعيد</div>
+              <div class="uber-driver-meta">
+                <span class="uber-stars">★ ٤.٩</span>
+                <span class="uber-meta-sep">·</span>
+                <span class="uber-car-type" id="driverCarTypeDisplay">Toyota Camry</span>
+              </div>
+            </div>
+            <div class="uber-plate-badge">
+              <div class="uber-plate-label">لوحة</div>
+              <div class="uber-plate-num" id="driverPlateDisplay">أب ج ٢٣٤٥</div>
+            </div>
           </div>
 
-          <div class="trip-progress-bar">
-            <div class="trip-progress-fill" id="tripFill"></div>
+          <!-- شريط الحالة الحية -->
+          <div class="uber-live-bar">
+            <div class="uber-live-car" id="carIconAnimated">🚗</div>
+            <div class="uber-live-text">
+              <div class="uber-live-status" id="tripStatusMsg">السائق في طريقه إليك</div>
+            </div>
+            <div class="uber-live-dot-wrap">
+              <div class="uber-live-dot"></div>
+              <span class="uber-live-label">مباشر</span>
+            </div>
           </div>
 
-          <div class="trip-actions-row">
-            <button class="trip-action-btn" onclick="callDriver()">📞 اتصال</button>
-            <button class="trip-action-btn" onclick="msgDriver()">💬 رسالة</button>
-            <button class="trip-action-btn" onclick="shareTripLive()" style="background:#276ef1;color:#fff;">📤 مشاركة</button>
+          <!-- أزرار التواصل -->
+          <div class="uber-action-grid">
+            <button class="uber-action-btn" onclick="callDriver()">
+              <span class="uber-action-icon">📞</span>
+              <span>اتصال</span>
+            </button>
+            <button class="uber-action-btn" onclick="msgDriver()">
+              <span class="uber-action-icon">💬</span>
+              <span>رسالة</span>
+            </button>
+            <button class="uber-action-btn" onclick="shareTripLive()">
+              <span class="uber-action-icon">📤</span>
+              <span>مشاركة</span>
+            </button>
           </div>
 
-          <!-- SOS + SPLIT FARE -->
-          <div style="display:flex;gap:8px;margin-top:10px;">
-            <button onclick="openSplitFare()" style="flex:1;padding:10px;background:#f0f4ff;border:1px solid #ccd8ff;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;color:#276ef1;">💰 تقسيم الأجرة</button>
-            <button onclick="openSOS()" style="flex:1;padding:10px;background:#fff0f0;border:2px solid #e74c3c;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;color:#e74c3c;animation:sosPulse 2s infinite;">🆘 طوارئ SOS</button>
+          <!-- SOS + تقسيم الأجرة -->
+          <div class="uber-bottom-row">
+            <button onclick="openSplitFare()" class="uber-split-btn">💰 تقسيم الأجرة</button>
+            <button onclick="openSOS()" class="uber-sos-btn">🆘 SOS طوارئ</button>
           </div>
+          <button onclick="cancelTrip()" class="uber-cancel-btn">إلغاء الرحلة</button>
 
-          <button class="btn-cancel-trip" onclick="cancelTrip()" style="margin-top:10px;">إلغاء الرحلة</button>
         </div>
       </div>
 
@@ -2460,35 +2502,56 @@ function foundDriver(driverName) {
   document.getElementById('searchingOverlay').classList.remove('active');
   document.getElementById('tripOverlay').classList.add('active');
   document.getElementById('driverCar').setAttribute('opacity','1');
+
+  // تحديث بطاقة السائق
+  var el = document.getElementById('driverNameDisplay');
+  if (el) el.textContent = driverName || 'محمد السعيد';
+
   toast('success','🚗 تم إيجاد سائق! ' + (driverName || 'السائق') + ' في طريقه إليك');
-  // حدث GA4: تم إيجاد سائق
   if (window.gtag) gtag('event', 'driver_found', { ride_type: selectedRideType || 'eco', fare: parseFloat(document.getElementById('fareVal').textContent.replace(/[^0-9.]/g,'')) || 22 });
   startTripProgress();
 }
 
-// ---- TRIP PROGRESS ----
+// ---- TRIP PROGRESS (محدّث بمستوى Uber) ----
 function startTripProgress() {
   tripProgress = 0;
   let phase = 0;
-  const etaNums = ['٥ د', '٤ د', '٣ د', '٢ د', '١ د', 'وصل!', 'في الطريق', 'اقتراب', 'وصلت!'];
+  var etaEl = document.getElementById('etaMinutes');
+  var fillEl = document.getElementById('etaProgressBar');
+  var carEl = document.getElementById('carOnTrack');
+  var statusEl = document.getElementById('tripStatusMsg');
+  var distEl = document.getElementById('driverDistanceText');
 
-  progressTimer = setInterval(() => {
+  progressTimer = setInterval(function() {
     tripProgress += 1.5;
-    document.getElementById('tripFill').style.width = tripProgress + '%';
-    moveCar(tripProgress);
+    var pct = tripProgress;
 
-    if (tripProgress >= 30 && phase === 0) {
+    // تحريك شريط التقدم
+    if (fillEl) fillEl.style.width = Math.min(pct, 95) + '%';
+    if (carEl) carEl.style.left = Math.min(pct, 85) + '%';
+
+    // تحديث العداد (عكسي)
+    var remaining = Math.max(0, Math.round(5 * (1 - pct / 35)));
+    var arabic = ['٠','١','٢','٣','٤','٥'];
+    if (etaEl && pct < 35) etaEl.textContent = arabic[remaining] || '١';
+
+    moveCar(pct);
+
+    if (pct >= 30 && phase === 0) {
       phase = 1;
-      document.getElementById('tripStatusMsg').textContent = 'السائق وصل إلى موقعك';
-      document.getElementById('etaNum').textContent = 'وصل!';
+      if (statusEl) statusEl.textContent = 'السائق وصل إلى موقعك 📍';
+      if (distEl) distEl.textContent = 'السائق وصل - تفضل بالصعود';
+      if (etaEl) etaEl.textContent = '٠';
       toast('info','📍 السائق وصل، تفضل بالصعود');
     }
-    if (tripProgress >= 55 && phase === 1) {
+    if (pct >= 55 && phase === 1) {
       phase = 2;
-      document.getElementById('tripStatusMsg').textContent = 'في طريقك إلى وجهتك';
-      document.getElementById('etaNum').textContent = '٨ د';
+      if (statusEl) statusEl.textContent = 'في طريقك إلى وجهتك 🛫';
+      if (distEl) distEl.textContent = 'استمتع بالرحلة!';
+      if (etaEl) etaEl.textContent = '٨';
+      if (fillEl) fillEl.style.background = 'linear-gradient(90deg,#00c853,#0077ff)';
     }
-    if (tripProgress >= 100) {
+    if (pct >= 100) {
       clearInterval(progressTimer);
       tripDone();
     }
@@ -3951,3 +4014,4 @@ fetch('/api/v1/config').then(function(r){return r.json();}).then(function(res){
 </body>
 
 </html>
+

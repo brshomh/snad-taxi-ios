@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -639,6 +639,26 @@
     }
 
     .atb-btn-green:hover { background:#167016; }
+    /* Google Maps Navigation Button */
+    .gmaps-nav-btn {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      width:100%;
+      padding:14px 16px;
+      background:linear-gradient(135deg,#4285F4,#1a73e8);
+      color:#fff;
+      border:none;
+      border-radius:16px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      margin-bottom:10px;
+      box-shadow:0 4px 15px rgba(66,133,244,0.4);
+      transition:all 0.2s;
+      font-family:'Cairo',sans-serif;
+    }
+    .gmaps-nav-btn:active { transform:scale(0.97); box-shadow:0 2px 8px rgba(66,133,244,0.3); }
 
     /* =====================
        EARNINGS SHEET
@@ -1815,6 +1835,13 @@
           <div class="atb-pax-rating">⭐ ٤.٧</div>
         </div>
 
+        <!-- زر ملاحة قوقل مابس احترافي -->
+        <button class="gmaps-nav-btn" id="navToPassengerBtn" onclick="openGoogleMapsToPassenger()">
+          <span style="font-size:20px;">&#x1F4CD;</span>
+          <span>افتح Google Maps للملاحة للعميل</span>
+          <span style="font-size:16px;margin-right:auto;">❯</span>
+        </button>
+
         <div class="atb-actions">
           <button class="atb-btn" onclick="callPax()">📞 اتصال</button>
           <button class="atb-btn-main" id="atbMainBtn" onclick="atbAction()">✓ وصلت للراكب</button>
@@ -2287,9 +2314,43 @@ function acceptTrip() {
   document.getElementById('atbMainBtn').textContent = '✓ وصلت للراكب';
   document.getElementById('atbMainBtn').className = 'atb-btn-main';
 
+  // إظهار زر الملاحة للعميل
+  var navBtn = document.getElementById('navToPassengerBtn');
+  if (navBtn) navBtn.style.display = 'flex';
+
   // Move car toward pickup
   animateCar(200, 350, 130, 260, 3000);
   toast('success','✅ قبلت الطلب! توجه إلى ' + s.pax);
+  
+  // فتح Google Maps تلقائياً بعد 2 ثانية
+  setTimeout(function() { openGoogleMapsToPassenger(); }, 2000);
+}
+
+// ---- وظائف ملاحة Google Maps ----
+function openGoogleMapsToPassenger() {
+  var s = scenarios[tripIdx % scenarios.length];
+  // إحداثيات موقع العميل (موقع سند الرياض كمثال)
+  var pickupLat = 24.7136 + (Math.random() * 0.02 - 0.01);
+  var pickupLng = 46.6753 + (Math.random() * 0.02 - 0.01);
+  
+  // حفظ الإحداثيات للاستخدام لاحقاً
+  window._currentPickupLat = pickupLat;
+  window._currentPickupLng = pickupLng;
+  
+  var mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + pickupLat + ',' + pickupLng + '&travelmode=driving&dir_action=navigate';
+  window.open(mapsUrl, '_blank');
+  toast('success', '🗺️ تم فتح Google Maps - توجه للعميل');
+}
+
+function openGoogleMapsToDestination() {
+  var s = scenarios[tripIdx % scenarios.length];
+  // إحداثيات الوجهة
+  var destLat = 24.7500 + (Math.random() * 0.05 - 0.025);
+  var destLng = 46.7200 + (Math.random() * 0.05 - 0.025);
+  
+  var mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + destLat + ',' + destLng + '&travelmode=driving&dir_action=navigate';
+  window.open(mapsUrl, '_blank');
+  toast('success', '🗺️ تم فتح Google Maps - توجه للوجهة: ' + s.dropoff);
 }
 
 // ---- TRIP PHASES ----
@@ -2302,8 +2363,20 @@ function atbAction() {
     document.getElementById('atbSub').textContent = 'توجه إلى ' + s.dropoff;
     document.getElementById('atbMainBtn').textContent = '✅ إنهاء الرحلة';
     document.getElementById('atbMainBtn').className = 'atb-btn-main atb-btn-green';
+
+    // تغيير زر الملاحة للوجهة
+    var navBtn = document.getElementById('navToPassengerBtn');
+    if (navBtn) {
+      navBtn.innerHTML = '<span style="font-size:20px;">&#x1F3AF;</span><span>افتح Google Maps للوجهة</span><span style="font-size:16px;margin-right:auto;">❯</span>';
+      navBtn.onclick = openGoogleMapsToDestination;
+      navBtn.style.background = 'linear-gradient(135deg,#00c853,#00a844)';
+    }
+
     animateCar(130, 260, 310, 100, 4000);
-    toast('success','🚗 استقبلت الراكب! توجه للوجهة');
+    toast('success', '🚗 استقبلت الراكب!');
+    
+    // فتح الملاحة للوجهة تلقائياً
+    setTimeout(function() { openGoogleMapsToDestination(); }, 1500);
   } else {
     finishTrip(s);
   }
@@ -2869,3 +2942,4 @@ window.acceptTrip = function() {
 
 </body>
 </html>
+
