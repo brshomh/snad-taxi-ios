@@ -24,13 +24,33 @@ jobs:
       - name: Sync Capacitor iOS
         run: npx cap sync ios
 
+      - name: Install Apple Certificate
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD="snad_keychain_pass"
+          P12_PATH=$RUNNER_TEMP/certificate.p12
+          
+          # Decode P12
+          echo "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" | base64 --decode > $P12_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 3600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $P12_PATH -k $KEYCHAIN_PATH -P "snad2026" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychains -s $KEYCHAIN_PATH $(security list-keychains | tr -d '"')
+
       - name: Build iOS App
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos build CODE_SIGNING_ALLOWED=NO
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos build CODE_SIGNING_ALLOWED=YES
 
       - name: Upload iOS Build Artifact
         uses: actions/upload-artifact@v3
         with:
           name: snad-ios-app
           path: ios/App/build/Release-iphoneos/App.app
+
