@@ -2,11 +2,64 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
+
+// ===================================================
+// Database Configuration & Live Store for Dashboard
+// ===================================================
+const DB_FILE = path.join(__dirname, 'snad_live_store.json');
+const DEFAULTS = {
+  metrics: { tripsToday: 0, revenueToday: 0, activeFleetPct: 0, onlineCount: 0, registeredPassengers: 0 },
+  drivers: [], registeredDrivers: [], passengers: [], trips: [],
+  pricingRules: {
+    eco:     { name: '\u0633\u0646\u062F X',   base: 22, km: 2.5, min: 12, icon: 'car',    commission: 10 },
+    comfort: { name: 'Comfort', base: 38, km: 2.5, min: 12, icon: 'car',    commission: 12 },
+    xl:      { name: 'XL',      base: 45, km: 3.0, min: 15, icon: 'car',    commission: 12 },
+    premium: { name: 'Black',   base: 75, km: 4.0, min: 20, icon: 'car',    commission: 15 }
+  },
+  settings: {
+    appName: '\u0633\u0646\u062F',
+    minDriverBalance: 20,
+    surgeMultiplier: 1.0,
+    surgeEnabled: false,
+    autoSurge: true,
+    maintenanceMode: false,
+    acceptNewDrivers: true,
+    threeDSecure: true,
+    googleMapsKey: 'AIzaSyDHhkYwsYUMw_O7ZSQ7mJU9NUfxobE59uc',
+    regions: { riyadh: true, jeddah: true, dammam: false, makkah: false },
+    paytabs: {
+      enabled: true,
+      profileId: '118240',
+      serverKey: 'SRJNKJHRB6-JKZW2KGMRH-BR6DNM2DLM',
+      baseUrl: 'https://secure.paytabs.sa',
+      callbackUrl: 'https://snad-taxi.loca.lt/api/callback',
+      returnUrl: 'https://snad-taxi.loca.lt/payment-success.html'
+    }
+  }
+};
+
+let liveStore = JSON.parse(JSON.stringify(DEFAULTS));
+if (fs.existsSync(DB_FILE)) {
+  try {
+    const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    liveStore = Object.assign({}, DEFAULTS, saved);
+    if (!liveStore.settings) liveStore.settings = DEFAULTS.settings;
+    if (!liveStore.settings.paytabs) liveStore.settings.paytabs = DEFAULTS.settings.paytabs;
+    if (!liveStore.settings.googleMapsKey) liveStore.settings.googleMapsKey = DEFAULTS.settings.googleMapsKey;
+    if (!liveStore.pricingRules || !liveStore.pricingRules.eco) liveStore.pricingRules = DEFAULTS.pricingRules;
+  } catch(e) { console.error('[DB] \u062E\u0637\u0623 \u064A\u0641 \u0627\u0644\u062A\u062D\u0645\u064A\u0644:', e.message); }
+}
+
+function saveStore() {
+  fs.writeFileSync(DB_FILE, JSON.stringify(liveStore, null, 2), 'utf8');
+}
+
 
 // ===================================================
 // PayTabs Configuration - مفاتيح مؤسسة سند الحقيقية
@@ -276,15 +329,16 @@ app.post('/api/pay-direct', async (req, res) => {
 // ===================================================
 app.post('/api/callback', async (req, res) => {
   console.log('PayTabs Callback:', JSON.stringify(req.body, null, 2));
-  
   const { tran_ref, payment_result } = req.body;
-  
   if (payment_result && payment_result.response_status === 'A') {
-    console.log(`✅ دفع ناجح: ${tran_ref}`);
+    console.log(`\u2705 \u062F\u0641\u0639 \u0646\u0627\u062C\u062D: ${tran_ref}`);
+    if (typeof liveStore !== 'undefined') {
+      liveStore.metrics.revenueToday += parseFloat(req.body.cart_amount || 0);
+      saveStore();
+    }
   } else {
-    console.log(`❌ دفع فاشل: ${tran_ref}`);
+    console.log(`\u274C \u062F\u0641\u0639 \u0641\u0627\u0634\u0644: ${tran_ref}`);
   }
-  
   res.sendStatus(200);
 });
 
@@ -313,12 +367,16 @@ app.post('/api/verify', async (req, res) => {
 
     const status  = data.payment_result?.response_status;
     const message = data.payment_result?.response_message;
-
-    // A = Authorized, H = Hold, P = Pending, D = Declined
+    if (status === 'A' || status === 'H') {
+      if (typeof liveStore !== 'undefined') {
+        liveStore.metrics.revenueToday += parseFloat(data.cart_amount || 0);
+        saveStore();
+      }
+    }
     res.json({
       success: status === 'A' || status === 'H',
       status:  status || 'U',
-      message: message || data.message || 'غير معروف',
+      message: message || data.message || '\u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641',
       tranRef: data.tran_ref || tranRef,
       raw:     data
     });
@@ -595,22 +653,181 @@ console.log('🧠 [AI Engine] تم تشغيل محرك الذكاء الاصطن
 
 // ===================================================
 
+
+// ===================================================
+// Fleet Management & Dashboard API Endpoints
+// ===================================================
+app.get('/api/v1/config', (req, res) => {
+  res.json({ success: true, settings: liveStore.settings, config: liveStore.settings, pricingRules: liveStore.pricingRules });
+});
+
+app.get('/api/v1/dashboard/metrics', (req, res) => {
+  liveStore.metrics.onlineCount          = liveStore.drivers.length;
+  liveStore.metrics.registeredPassengers = liveStore.passengers.length;
+  res.json({ success: true, data: liveStore.metrics });
+});
+
+app.get('/api/v1/fleet/live', (req, res) => {
+  res.json({
+    success:          true,
+    onlineDriversCount: liveStore.drivers.length,
+    onlineDrivers:    liveStore.drivers,
+    registeredDrivers:liveStore.registeredDrivers,
+    passengers:       liveStore.passengers,
+    activeTrips:      liveStore.trips.filter(t => t.status === 'Ongoing'),
+    metrics:          liveStore.metrics
+  });
+});
+
+app.get(['/api/v1/fleet/online-drivers', '/api/drivers'], (req, res) => {
+  res.json({ success: true, drivers: liveStore.drivers, registered: liveStore.registeredDrivers, data: liveStore.drivers });
+});
+
+app.get('/api/v1/pricing', (req, res) => {
+  res.json({ success: true, data: liveStore.pricingRules });
+});
+
+app.get('/api/v1/admin/settings', (req, res) => {
+  res.json({ success: true, data: liveStore.settings });
+});
+
+app.get('/api/v1/trips', (req, res) => {
+  res.json({ success: true, data: liveStore.trips });
+});
+
+app.get('/api/v1/passengers', (req, res) => {
+  res.json({ success: true, data: liveStore.passengers });
+});
+
+app.post(['/api/v1/driver/status', '/api/v1/driver/register'], (req, res) => {
+  const data = req.body;
+  const nm  = data.name     || '\u0643\u0627\u0628\u062A\u0646';
+  const ph  = data.phone    || '+9665' + Math.floor(10000000 + Math.random()*90000000);
+  const v   = data.vehicle  || '\u062A\u0648\u064A\u0648\u062A\u0627 \u0643\u0627\u0645\u0631\u064A 2024';
+  const loc = data.location || '\u0627\u0644\u0631\u064A\u0627\u0636';
+  let ex  = liveStore.drivers.find(d => d.phone === ph);
+  if (!ex) {
+    ex = { id: 'SNAD-' + Math.floor(1000 + Math.random() * 9000), name: nm, phone: ph, vehicle: v, location: loc, status: 'Online' };
+    liveStore.drivers.unshift(ex);
+  } else {
+    ex.location = loc;
+    ex.status   = data.status || 'Online';
+  }
+  let er = liveStore.registeredDrivers.find(r => r.phone === ph);
+  if (!er) {
+    er = { id: Date.now(), name: nm, phone: ph, vehicle: v, docsStatus: '\u0645\u0643\u062A\u0645\u0644\u0629', status: '\u0645\u0641\u0639\u0644', approved: true, balance: data.balance || 20 };
+    liveStore.registeredDrivers.unshift(er);
+  }
+  saveStore();
+  res.json({ success: true, message: 'Driver status updated', data: ex });
+});
+
+app.post('/api/v1/passenger/register', (req, res) => {
+  const data = req.body;
+  const ph = data.phone || '+9665' + Math.floor(10000000 + Math.random()*90000000);
+  let ex = liveStore.passengers.find(p => p.phone === ph);
+  if (!ex) {
+    ex = { id: 'PASS-' + Math.floor(1000+Math.random()*9000), name: data.name || '\u0639\u0645\u064A\u0644', phone: ph, registeredAt: new Date().toLocaleString('ar-SA') };
+    liveStore.passengers.unshift(ex);
+    saveStore();
+  }
+  res.json({ success: true, passenger: ex });
+});
+
+app.post('/api/v1/trip/create', (req, res) => {
+  const data = req.body;
+  const tid = 'TRIP-' + Date.now();
+  const trip = {
+    tripId: tid,
+    passengerName: data.passengerName || '\u0639\u0645\u064A\u0644',
+    passengerPhone: data.passengerPhone || '+966500000000',
+    driverName: data.driverName || '\u0633\u0627\u0626\u0642 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F',
+    driverPhone: data.driverPhone || '',
+    pickup: data.pickup || '\u0627\u0644\u0645\u0648\u0642\u0639 \u0627\u0644\u062D\u0627\u0644\u064A',
+    dropoff: data.dropoff || '\u0627\u0644\u0648\u062C\u0647\u0629',
+    fare: parseFloat(data.fare) || 30,
+    status: 'Ongoing',
+    createdAt: new Date().toLocaleTimeString('ar-SA')
+  };
+  liveStore.trips.unshift(trip);
+  liveStore.metrics.tripsToday++;
+  saveStore();
+  res.json({ success: true, trip: trip });
+});
+
+app.post('/api/v1/trip/finish', (req, res) => {
+  const data = req.body;
+  const tr = liveStore.trips.find(t => t.tripId === data.tripId);
+  if (tr) {
+    tr.status = 'Completed';
+    tr.finishedAt = new Date().toLocaleTimeString('ar-SA');
+    saveStore();
+  }
+  res.json({ success: true, message: '\u062A\u0645 \u0625\u0646\u0647\u0627\u0621 \u0627\u0644\u0631\u062D\u0644\u0629' });
+});
+
+app.post('/api/v1/driver/approve', (req, res) => {
+  const data = req.body;
+  const drv = liveStore.registeredDrivers.find(d => d.id === data.id);
+  if (drv) {
+    drv.approved = true;
+    drv.status = '\u0645\u0641\u0639\u0644 \u0648\u0645\u0633\u062A\u0646\u062F\u0627\u062A \u0645\u0639\u062A\u0645\u062F\u0629';
+    saveStore();
+  }
+  res.json({ success: true, message: '\u062A\u0645 \u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u0643\u0627\u0628\u062A\u0646' });
+});
+
+app.post('/api/v1/admin/driver/remove', (req, res) => {
+  const data = req.body;
+  liveStore.drivers = liveStore.drivers.filter(d => d.id !== data.id && d.phone !== data.phone);
+  liveStore.registeredDrivers = liveStore.registeredDrivers.filter(d => d.id !== data.id && d.phone !== data.phone);
+  saveStore();
+  res.json({ success: true, message: '\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0633\u0627\u0626\u0642' });
+});
+
+app.post('/api/v1/admin/pricing', (req, res) => {
+  const data = req.body;
+  if (data.pricingRules) {
+    liveStore.pricingRules = data.pricingRules;
+    saveStore();
+  }
+  res.json({ success: true, message: '\u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u062A\u0633\u0639\u064A\u0631\u0629', data: liveStore.pricingRules });
+});
+
+app.post('/api/v1/admin/settings', (req, res) => {
+  const data = req.body;
+  if (data.settings) {
+    liveStore.settings = Object.assign({}, liveStore.settings, data.settings);
+    saveStore();
+  }
+  res.json({ success: true, message: '\u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u0625\u0639\u062F\u0627د\u0627\u062A', data: liveStore.settings });
+});
+
+app.post('/api/v1/admin/reset', (req, res) => {
+  const data = req.body;
+  if (data.target === 'daily') {
+    liveStore.metrics.tripsToday = 0;
+    liveStore.metrics.revenueToday = 0;
+    saveStore();
+    res.json({ success: true, message: '\u062A\u0645 \u0625\u0639\u0627\u062F\u0629 \u062A\u0639\u064A\u064A\u0646 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u064A\u0648\u0645' });
+  } else if (data.target === 'trips') {
+    liveStore.trips = [];
+    saveStore();
+    res.json({ success: true, message: '\u062A\u0645 \u0645\u0633\u062D \u0627\u0644\u0631\u062D\u0644\u0627ت' });
+  } else {
+    res.status(400).json({ error: 'target \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641' });
+  }
+});
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log('');
-  console.log('🚗 ====================================');
-  console.log('   خادم سند تاكسي + PayTabs يعمل!');
+  console.log('*** ====================================');
+  console.log('   \u062E\u0627\u062F\u0645 \u0633\u0646\u062F \u062A\u0627\u0643\u0633\u064A + PayTabs \u064A\u0639\u0645\u0644!');
   console.log(`   http://localhost:${PORT}`);
-  console.log('🧠 محرك الذكاء الاصطناعي: نشط');
-  console.log('🚗 ====================================');
+  console.log('*** \u0645\u062D\u0631\u0643 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064A: \u0646\u0634\u0637');
+  console.log('*** ====================================');
   console.log('');
-  console.log('📌 افتح التطبيق على: http://localhost:3000/passenger.html');
-  console.log('');
-});
-
-  console.log(`   http://localhost:${PORT}`);
-  console.log('🚗 ====================================');
-  console.log('');
-  console.log('📌 افتح التطبيق على: http://localhost:3000/passenger.html');
+  console.log('*** \u0627\u0641\u062A\u062D \u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0639\u0644\u0649: http://localhost:3000/passenger.html');
   console.log('');
 });

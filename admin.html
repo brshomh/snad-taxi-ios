@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>سند — لوحة التحكم الشاملة</title>
 <!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6WHS68GB18"><\/script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6WHS68GB18"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-6WHS68GB18', { page_title: 'سند Admin', send_page_view: true });
-<\/script>
+</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="js/firebase-app.js"></script>
+<script src="js/firebase-database.js"></script>
 <script src="js/firebase-init.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
 :root{--bg:#07070d;--sf:#0f0f1a;--card:#161622;--brd:rgba(255,255,255,.07);--ac:#f5c518;--a2:#3b82f6;--gn:#22c55e;--rd:#ef4444;--tx:#eeeef5;--sub:rgba(238,238,245,.5);--r:14px;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -146,7 +146,7 @@ input:checked+.tgs::before{transform:translateX(-19px);}
       <div class="ldot"></div>
       <div><div style="font-size:12px;font-weight:700;">خادم مباشر</div><div id="ltime" style="font-size:10px;color:var(--sub);"></div></div>
     </div>
-    <div class="sf2">34.165.9.100:80</div>
+    <div class="sf2">34.40.68.216:80</div>
   </div>
 </aside>
 
@@ -256,8 +256,8 @@ input:checked+.tgs::before{transform:translateX(-19px);}
       </div>
       <div class="sg2">
         <div class="sgh">روابط الإعادة</div>
-        <div class="frow"><label class="lbl">Callback URL (استقبال نتيجة الدفع)</label><input class="inp" id="ptCallback" value="http://34.165.9.100/api/callback" placeholder="https://..."></div>
-        <div class="frow"><label class="lbl">Return URL (بعد اكتمال الدفع)</label><input class="inp" id="ptReturn" value="http://34.165.9.100/payment-success" placeholder="https://..."></div>
+        <div class="frow"><label class="lbl">Callback URL (استقبال نتيجة الدفع)</label><input class="inp" id="ptCallback" value="http://34.40.68.216/api/callback" placeholder="https://..."></div>
+        <div class="frow"><label class="lbl">Return URL (بعد اكتمال الدفع)</label><input class="inp" id="ptReturn" value="http://34.40.68.216/payment-success" placeholder="https://..."></div>
       </div>
     </div>
     <div class="card">
@@ -565,12 +565,12 @@ input:checked+.tgs::before{transform:translateX(-19px);}
   <div class="ph"><div class="pt">🔗 روابط التطبيق المباشرة</div></div>
   <div class="g2">
     <div class="card">
-      <div class="ct">🌐 روابط الإنتاج (34.165.9.100)</div>
+      <div class="ct">🌐 روابط الإنتاج (34.40.68.216)</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <a href="http://34.165.9.100/" target="_blank" class="btn bgr" style="justify-content:space-between;">🏠 الصفحة الرئيسية <span style="color:var(--sub);font-size:10px;">34.165.9.100</span></a>
-        <a href="http://34.165.9.100/passenger.html" target="_blank" class="btn bac" style="justify-content:space-between;">👤 تطبيق الراكب <span style="color:rgba(0,0,0,.5);font-size:10px;">/passenger.html</span></a>
-        <a href="http://34.165.9.100/driver.html" target="_blank" class="btn bbl" style="justify-content:space-between;">🚗 تطبيق السائق <span style="font-size:10px;">/driver.html</span></a>
-        <a href="http://34.165.9.100/admin.html" target="_blank" class="btn bgn" style="justify-content:space-between;">📊 لوحة التحكم <span style="font-size:10px;">/admin.html</span></a>
+        <a href="http://34.40.68.216/" target="_blank" class="btn bgr" style="justify-content:space-between;">🏠 الصفحة الرئيسية <span style="color:var(--sub);font-size:10px;">34.40.68.216</span></a>
+        <a href="http://34.40.68.216/passenger.html" target="_blank" class="btn bac" style="justify-content:space-between;">👤 تطبيق الراكب <span style="color:rgba(0,0,0,.5);font-size:10px;">/passenger.html</span></a>
+        <a href="http://34.40.68.216/driver.html" target="_blank" class="btn bbl" style="justify-content:space-between;">🚗 تطبيق السائق <span style="font-size:10px;">/driver.html</span></a>
+        <a href="http://34.40.68.216/admin.html" target="_blank" class="btn bgn" style="justify-content:space-between;">📊 لوحة التحكم <span style="font-size:10px;">/admin.html</span></a>
       </div>
     </div>
     <div class="card">

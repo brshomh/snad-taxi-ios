@@ -437,7 +437,7 @@ gtag('config','G-6WHS68GB18',{page_title:'سند - المنصة الرئيسية
             <div>
                 <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px; font-weight:700;">رابط سيرفر الـ API الخاص بالتطبيق (App Backend Endpoint):</label>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="live-app-server-url-field" class="form-control" value="http://34.165.9.100" style="font-family:monospace; font-size:12px; padding:8px 12px; background:#0f172a; color:#34d399; border:1px solid #334155;">
+                    <input type="text" id="live-app-server-url-field" class="form-control" value="http://34.40.68.216" style="font-family:monospace; font-size:12px; padding:8px 12px; background:#0f172a; color:#34d399; border:1px solid #334155;">
                     <button class="btn btn-primary" onclick="updateAppServerURL()" style="white-space:nowrap; padding:8px 14px; font-size:12px; font-weight:800;">
                         <i class="fa-solid fa-plug"></i> تحديث رابط السيرفر
                     </button>
@@ -2630,7 +2630,7 @@ gtag('config','G-6WHS68GB18',{page_title:'سند - المنصة الرئيسية
         document.addEventListener('DOMContentLoaded', syncLiveFleetData);
 
     
-        let activeAppServerBase = localStorage.getItem('snad_app_server_url') || 'http://34.165.9.100';
+        let activeAppServerBase = localStorage.getItem('snad_app_server_url') || 'http://34.40.68.216';
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlInput = document.getElementById('live-app-server-url-field');
